@@ -18,7 +18,7 @@ Built from the repo memory files:
 
 | Element | What to install | Live proof |
 |---|---|---|
-| **2 — IaC** | `databricks.yml` + `resources/*.yml` + GitHub Actions + optional Terraform | `bundle deploy`, job/pipeline objects, CI |
+| **2 — IaC** | `databricks.yml` + `resources/*.yml` + CI template + optional Terraform | `bundle deploy`, job/pipeline objects, CI |
 | **3 — Ingest / streaming** | Lakeflow pipeline + file-arrival job + seed files | Auto Loader detects a live file drop; expectations drop bad rows; schema evolves (`collaboration_flag`); Kinesis path documented |
 | **4 — Governance / catalog** | UC comments, tags, grants, quality MV, lineage queries | Catalog Explorer + `system.access.table_lineage` + `gold_data_quality_scores` |
 | **5 — Analytics / ML** | Notebook trains sklearn models, logs to MLflow UC | `gold_predictive_velocity` with forecast, velocity, trend IDs |
@@ -73,6 +73,7 @@ onr_itss_poc/
   tests/
   docs/                          # architecture, IL5, DR, legacy, demo script
   infra/terraform/               # optional account-level IaC
+  infra/ci/databricks-ci.yml     # copy to repo-root .github/workflows/
 ```
 
 ---

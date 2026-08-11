@@ -55,6 +55,13 @@ If serverless jobs/pipelines are not enabled in the account console (**Settings 
 
 ## 3. Deploy
 
+CI template (copy to your repo root if the GitHub `workflows` permission is available):
+
+```bash
+mkdir -p ../.github/workflows
+cp infra/ci/databricks-ci.yml ../.github/workflows/databricks-ci.yml
+```
+
 From this directory:
 
 ```bash
