@@ -2,6 +2,9 @@
 
 **Rules (11.2):** live cloud, live repo, no PowerPoint, no heavily edited capture, mock data only, Key Personnel narrate.
 
+**POC workspace:** https://dbc-ae83c2ba-d87c.cloud.databricks.com/?o=7474653232339519  
+**Folder:** `/Workspace/Users/joshua.strickland@satsyil.com/onr_itss_poc`
+
 **Prep (day before)**
 
 1. `databricks bundle deploy -t dev && databricks bundle run bootstrap_and_seed -t dev`

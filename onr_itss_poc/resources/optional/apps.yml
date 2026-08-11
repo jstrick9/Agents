@@ -4,13 +4,6 @@ resources:
       name: onr-exec-app-${bundle.target}
       description: Element 6 — non-technical leader search, filter, extract, anomaly review, approval routing.
       source_code_path: ../src/app
-      permissions:
-        - level: CAN_USE
-          group_name: ${var.executives_group}
-        - level: CAN_USE
-          group_name: ${var.analysts_group}
-        - level: CAN_MANAGE
-          group_name: ${var.engineers_group}
       resources:
         - name: sql-warehouse
           sql_warehouse:

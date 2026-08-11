@@ -1,167 +1,187 @@
-# Install in a Databricks workspace
+# Install in the POC workspace
 
-Target: **AWS GovCloud** (`*.cloud.databricks.us`) or **GovCloud DoD / IL5** (`*.cloud.databricks.mil`), region `us-gov-west-1`. Commercial workspaces work for a dry run if you change the host, but they are **not** the demonstration boundary.
+This package is pointed at **your commercial Databricks workspace**:
+
+| | |
+|---|---|
+| Host | https://dbc-ae83c2ba-d87c.cloud.databricks.com/?o=7474653232339519 |
+| Folder | `/Workspace/Users/joshua.strickland@satsyil.com/onr_itss_poc` |
+| Browse | https://dbc-ae83c2ba-d87c.cloud.databricks.com/browse/folders/2754726583924232?o=7474653232339519 |
+
+IL5 / GovCloud is the **proposed production** architecture (`databricks.yml` target `govcloud` + `docs/IL5_ZERO_TRUST.md`). This host is the live POC / demo environment.
+
+More detail: [WORKSPACE.md](WORKSPACE.md).
+
+---
 
 ## 0. Prerequisites
 
-- Databricks CLI ≥ 0.230 (`databricks -v`)
-- Workspace admin or metastore privilege to `CREATE CATALOG`
-- Account groups (create empty groups if needed):
-  - `onr_data_engineers`
-  - `onr_analysts`
-  - `onr_executives`
-- A serverless SQL warehouse (or classic SQL warehouse) — copy its ID
-- SSO configured (GovCloud requirement)
-- **Mock data only.** Never land CUI, PII, or classified files in `landing/`
+- Access to the folder above as `joshua.strickland@satsyil.com`
+- Privilege to `CREATE SCHEMA` (and ideally `CREATE CATALOG`). If catalog create is denied, use `main` + schema `onr_itss_poc`
+- A SQL warehouse when you are ready for Lakeview / the App (not required for notebooks + pipeline)
+- **Mock data only** in `landing/`
 
-## 1. Create the catalog (once, as metastore admin)
+---
 
-DAB can create schemas and volumes but not always the catalog. In a SQL editor:
+## 1. Get the code into the folder
 
-```sql
-CREATE CATALOG IF NOT EXISTS onr_itss_dev
-  COMMENT 'ONR ITSS POC — mock unclassified data only. No CUI/PII.';
-```
+### Option A — Git folder (best for Element 2)
 
-If your metastore requires a managed location, add
-`MANAGED LOCATION 's3://<govcloud-uc-bucket>/onr_itss/'`.
+1. Open the [project folder](https://dbc-ae83c2ba-d87c.cloud.databricks.com/browse/folders/2754726583924232?o=7474653232339519).
+2. **Create → Git folder** / connect repo `https://github.com/jstrick9/Agents`, branch `arena/019ff225-agents`.
+3. Open the inner package `onr_itss_poc/` (bundle root with `databricks.yml`).
 
-## 2. Point the bundle at your workspace
-
-Edit `databricks.yml`:
-
-```yaml
-targets:
-  dev:
-    workspace:
-      host: https://<your-deployment>.cloud.databricks.us   # or .mil
-```
-
-Edit `resources/dashboards.yml` is already wired. Set the warehouse once:
+### Option B — CLI deploy from your laptop
 
 ```bash
-# optional: export instead of editing YAML
-export DATABRICKS_HOST=https://<your-deployment>.cloud.databricks.us
-databricks auth login --host "$DATABRICKS_HOST"
-```
-
-Put the warehouse id in the target variables (`warehouse_id`) or:
-
-```bash
-databricks bundle deploy -t dev --var="warehouse_id=<your-warehouse-id>"
-```
-
-If serverless jobs/pipelines are not enabled in the account console (**Settings → Feature enablement**), switch the pipeline/job `serverless: true` flags to a classic Nitro cluster policy before deploy.
-
-## 3. Deploy
-
-CI template (copy to your repo root if the GitHub `workflows` permission is available):
-
-```bash
-mkdir -p ../.github/workflows
-cp infra/ci/databricks-ci.yml ../.github/workflows/databricks-ci.yml
-```
-
-From this directory:
-
-```bash
+cd onr_itss_poc
+databricks auth login --host https://dbc-ae83c2ba-d87c.cloud.databricks.com
 databricks bundle validate -t dev
 databricks bundle deploy -t dev
 ```
 
-This creates / updates:
+`databricks.yml` already sets:
 
-- UC schema + volumes (landing, export, checkpoints)
-- Lakeflow pipeline `onr-itss-medallion-dev`
-- Jobs: bootstrap/seed, file-arrival ingest, element demo sequence, nightly QA
-- Databricks App `onr-exec-app-dev`
-- Lakeview dashboard *ONR Executive D and A dev*
-- Lakehouse monitor on `gold_financial_execution`
+```yaml
+workspace:
+  host: https://dbc-ae83c2ba-d87c.cloud.databricks.com
+  root_path: /Workspace/Users/joshua.strickland@satsyil.com/onr_itss_poc
+```
 
-## 4. Bootstrap catalog + seed mock files
+First deploy creates the pipeline + jobs only (no App/Lakeview until a warehouse id is set — see step 7).
 
-If the catalog does not exist, run as metastore admin:
+### Option C — Upload
+
+Copy `src/`, `data/`, `docs/` into the folder in the UI.
+
+---
+
+## 2. Bootstrap Unity Catalog + seed mock files
+
+In the workspace, run in order:
+
+1. `src/setup/00_uc_bootstrap`  
+   - Default: `onr_itss_dev.da_platform`  
+   - If `CREATE CATALOG` fails, set widget `catalog` = `main` and `schema` = `onr_itss_poc`, re-run  
+   - Leave `apply_group_grants` = `false` unless those account groups exist
+2. `src/setup/01_seed_mock_data` (same catalog/schema widgets)
+
+Or from CLI (after deploy):
 
 ```bash
 databricks bundle run bootstrap_and_seed -t dev
 ```
 
-Or in the workspace: run `src/setup/00_uc_bootstrap.sql` then `src/setup/01_seed_mock_data`.
-
-Confirm files:
+Confirm:
 
 ```
-/Volumes/onr_itss_dev/da_platform/landing/grants/batch_001.jsonl
-/Volumes/onr_itss_dev/da_platform/landing/grants/batch_002_schema_evolution.jsonl
-/Volumes/onr_itss_dev/da_platform/landing/financial/fy26_execution.csv
-/Volumes/onr_itss_dev/da_platform/landing/vendors/subscriptions.jsonl
-/Volumes/onr_itss_dev/da_platform/landing/_demo/live_drop_element3.jsonl
+/Volumes/<catalog>/<schema>/landing/grants/batch_001.jsonl
+/Volumes/<catalog>/<schema>/landing/grants/batch_002_schema_evolution.jsonl
+/Volumes/<catalog>/<schema>/landing/financial/fy26_execution.csv
+/Volumes/<catalog>/<schema>/landing/vendors/subscriptions.jsonl
+/Volumes/<catalog>/<schema>/landing/_demo/live_drop_element3.jsonl
 ```
 
-## 5. Run the medallion pipeline
+---
+
+## 3. Run the medallion pipeline
 
 ```bash
 databricks bundle run onr_medallion -t dev
 ```
 
-Wait until the update is `COMPLETED`. Open the pipeline **Expectations** tab — you should see dropped rows for the seeded null grant id and negative award.
+Or **Workflows → Delta Live Tables / Lakeflow pipelines → `onr-itss-medallion-dev` → Start**.
 
-## 6. Grants for consumers + QA
+If you imported files without the bundle, create a pipeline in the UI:
 
-In a notebook, run `src/setup/02_apply_governance.py`, then:
+- Source: `src/pipelines/bronze_silver_gold.py`
+- Catalog / target schema: the same pair as bootstrap
+- Configuration: `onr.catalog` and `onr.schema`
+- Serverless if available; otherwise a UC-enabled cluster
 
-```bash
-databricks bundle run nightly_validate -t dev
-```
+Wait until **COMPLETED**. Open **Expectations** — null grant id and negative award should show as dropped.
 
-The notebook must exit `quality_passed=true`.
+---
 
-## 7. Open the leadership surfaces
+## 4. Walk the demonstration notebooks
 
-- **Lakeview:** workspace → Dashboards → *ONR Executive D and A dev*
-  Set the `catalog` / `schema` parameters if prompted.
-- **App:** workspace → Apps → *onr-exec-app-dev*
-  First start may take a few minutes. Grant the app service principal is already declared in `resources/apps.yml`.
+Open `src/notebooks/00_demo_index`, then:
 
-If the dashboard JSON needs a visual tweak after import, bind the datasets in the UI and `databricks bundle generate dashboard` to persist.
+1. `03_element_ingest_demo`
+2. `04_element_governance_catalog`
+3. `05_element_analytics_ml` (needs `scikit-learn` + `mlflow` on the cluster / serverless env)
+4. `06_element_dashboard_automation`
+5. `07_element_secure_export`
 
-## 8. Dry-run the demonstration notebooks
+Set the `catalog` / `schema` widgets to match bootstrap.
+
+CLI:
 
 ```bash
 databricks bundle run element_demo_sequence -t dev
 ```
 
-Or open in order:
+---
 
-1. `src/notebooks/03_element_ingest_demo`
-2. `src/notebooks/04_element_governance_catalog`
-3. `src/notebooks/05_element_analytics_ml` (needs `scikit-learn`, `mlflow` — declared on the job env)
-4. `src/notebooks/06_element_dashboard_automation`
-5. `src/notebooks/07_element_secure_export`
+## 5. QA
 
-## 9. Local tests (no workspace required)
+```bash
+databricks bundle run nightly_validate -t dev
+```
+
+Notebook must exit `quality_passed=true`.
+
+---
+
+## 6. Lakeview + App (after you have a warehouse)
+
+1. Copy the SQL warehouse id from **SQL Warehouses**.
+2. In `databricks.yml` uncomment:
+
+   ```yaml
+   include:
+     - resources/*.yml
+     - resources/optional/*.yml
+   ```
+
+3. Redeploy:
+
+   ```bash
+   databricks bundle deploy -t dev --var="warehouse_id=<your-warehouse-id>"
+   ```
+
+4. Open **Dashboards → ONR Executive D and A dev** and **Apps → onr-exec-app-dev**.
+
+---
+
+## 7. Local tests (no workspace)
 
 ```bash
 pip install pytest
 pytest tests/ -q
 ```
 
-## 9. Tear down a dev deploy
+---
+
+## Tear down
 
 ```bash
 databricks bundle destroy -t dev
-# Catalog data remains. To drop:
-# DROP CATALOG onr_itss_dev CASCADE;
+# DROP CATALOG onr_itss_dev CASCADE;   -- only if you created it and want it gone
 ```
+
+Destroy does **not** delete the Git folder.
+
+---
 
 ## Troubleshooting
 
 | Symptom | Fix |
 |---|---|
-| Pipeline cannot see `/Volumes/...` | Bootstrap did not run, or catalog/schema widgets do not match DAB vars |
-| `collaboration_flag` missing | Batch 002 not landed, or pipeline not updated after seed |
-| App cannot query | Set `warehouse_id`, redeploy; confirm gold tables exist |
-| Serverless not allowed | Enable preview or attach a Nitro classic cluster |
-| `CREATE SHARE` fails | Expected without metastore privilege — narrate the SQL anyway |
-| Groups not found | Create the three account groups, rerun bootstrap |
-| File-arrival does not fire | Confirm the trigger URL is `/Volumes/<catalog>/<schema>/landing/grants` and the live drop was copied *into* that folder, not `_demo/` |
+| `CREATE CATALOG` denied | Widget `catalog=main`, `schema=onr_itss_poc`, re-run bootstrap |
+| Pipeline cannot see `/Volumes/...` | Bootstrap did not succeed; widgets ≠ pipeline config |
+| Groups not found | Leave `apply_group_grants=false` |
+| App / dashboard deploy fails | Do not include `resources/optional` until `warehouse_id` is set |
+| Serverless not allowed | Attach a UC-enabled classic cluster |
+| File-arrival does not fire | Drop the live file into `landing/grants/`, not `landing/_demo/` |
+| Git folder shows repo root, not notebooks | Open the inner `onr_itss_poc/` directory |

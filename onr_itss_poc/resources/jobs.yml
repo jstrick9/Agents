@@ -13,10 +13,11 @@ resources:
       tasks:
         - task_key: bootstrap_uc
           notebook_task:
-            notebook_path: ../src/setup/00_uc_bootstrap.sql
+            notebook_path: ../src/setup/00_uc_bootstrap
             base_parameters:
               catalog: ${var.catalog}
               schema: ${var.schema}
+              apply_group_grants: "false"
               engineers_group: ${var.engineers_group}
               analysts_group: ${var.analysts_group}
               executives_group: ${var.executives_group}

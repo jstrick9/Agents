@@ -9,4 +9,7 @@ AI agent memory files plus the installable **ONR ITSS** Databricks workspace pac
 | [`AI_Agent_Memory_Files/POC/Data Call - TECHNICAL DEMONSTRATION.md`](AI_Agent_Memory_Files/POC/Data%20Call%20-%20TECHNICAL%20DEMONSTRATION.md) | Source data call (Volume IV / Factor 3) |
 | **[`onr_itss_poc/`](onr_itss_poc/)** | **Install this** in your Databricks workspace |
 
-Start here: [`onr_itss_poc/README.md`](onr_itss_poc/README.md) → [`onr_itss_poc/INSTALL.md`](onr_itss_poc/INSTALL.md).
+POC workspace: [dbc-ae83c2ba-d87c](https://dbc-ae83c2ba-d87c.cloud.databricks.com/?o=7474653232339519)  
+Folder: [`/Workspace/Users/joshua.strickland@satsyil.com/onr_itss_poc`](https://dbc-ae83c2ba-d87c.cloud.databricks.com/browse/folders/2754726583924232?o=7474653232339519)
+
+Start here: [`onr_itss_poc/WORKSPACE.md`](onr_itss_poc/WORKSPACE.md) → [`onr_itss_poc/INSTALL.md`](onr_itss_poc/INSTALL.md).

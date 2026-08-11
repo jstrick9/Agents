@@ -8,7 +8,10 @@ Built from the repo memory files:
 - `AI_Agent_Memory_Files/Databricks/Databricks_AWS_Agent_Memory.md`
 - `AI_Agent_Memory_Files/POC/Data Call - TECHNICAL DEMONSTRATION.md`
 
-**Environment:** AWS GovCloud / GovCloud DoD (`us-gov-west-1`), Unity Catalog, serverless-first, mock unclassified data only.
+**POC workspace (this install):** [dbc-ae83c2ba-d87c.cloud.databricks.com](https://dbc-ae83c2ba-d87c.cloud.databricks.com/?o=7474653232339519)  
+**Folder:** [`/Workspace/Users/joshua.strickland@satsyil.com/onr_itss_poc`](https://dbc-ae83c2ba-d87c.cloud.databricks.com/browse/folders/2754726583924232?o=7474653232339519)
+
+**Proposed production boundary:** AWS GovCloud / GovCloud DoD IL5 (`docs/IL5_ZERO_TRUST.md`). This commercial host is the live POC.
 
 **Not in scope:** a live SSO/MFA portal (Element 1) — covered as architecture narrative in `docs/IL5_ZERO_TRUST.md`.
 
@@ -33,16 +36,19 @@ Strategic prompts **a–e** have narration cards in `docs/STRATEGIC_PROMPTS.md` 
 
 ```bash
 cd onr_itss_poc
-# 1. Set workspace host in databricks.yml
-# 2. databricks auth login --host https://<deployment>.cloud.databricks.us
+databricks auth login --host https://dbc-ae83c2ba-d87c.cloud.databricks.com
 databricks bundle validate -t dev
-databricks bundle deploy -t dev --var="warehouse_id=<sql-warehouse-id>"
+databricks bundle deploy -t dev
 databricks bundle run bootstrap_and_seed -t dev
 databricks bundle run onr_medallion -t dev
 databricks bundle run nightly_validate -t dev
 ```
 
-Full steps, GovCloud notes, and troubleshooting: **[INSTALL.md](INSTALL.md)**.
+Or attach this Git branch as a Git folder in  
+`/Workspace/Users/joshua.strickland@satsyil.com/onr_itss_poc`  
+and run `src/setup/00_uc_bootstrap` from the UI.
+
+Workspace URLs, folder id, and import options: **[WORKSPACE.md](WORKSPACE.md)** · full steps: **[INSTALL.md](INSTALL.md)**.
 
 Local unit tests (no Databricks):
 
@@ -107,7 +113,7 @@ Presenter checklist: [`docs/ELEMENT_CHECKLIST.md`](docs/ELEMENT_CHECKLIST.md)
 - **No `ai_query` foundation-model SQL** (not on the IL5 feature matrix) — summaries are deterministic
 - **Serverless-first** with classic Nitro fallback
 - **Customer-defined names contain no CUI** (Databricks name-field rule)
-- Hosts default to `*.cloud.databricks.us` / `*.cloud.databricks.mil`
+- This POC deploys to `dbc-ae83c2ba-d87c.cloud.databricks.com`; GovCloud hosts stay on the `govcloud` target
 
 See [`docs/IL5_ZERO_TRUST.md`](docs/IL5_ZERO_TRUST.md) and [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 

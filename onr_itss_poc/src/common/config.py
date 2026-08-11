@@ -1,7 +1,8 @@
 """Shared catalog/schema/volume resolution for notebooks and jobs.
 
-Widgets (dbutils) win, then spark.conf, then defaults. Never hard-code a
-commercial workspace host — GovCloud/DoD hosts are injected via DAB variables.
+Widgets (dbutils) win, then spark.conf, then defaults.
+Commercial POC host is https://dbc-ae83c2ba-d87c.cloud.databricks.com
+(GovCloud/DoD remains the proposed production boundary).
 """
 
 from __future__ import annotations
@@ -11,7 +12,10 @@ from typing import Any, Optional
 
 DEFAULT_CATALOG = "onr_itss_dev"
 DEFAULT_SCHEMA = "da_platform"
-DEFAULT_AWS_REGION = "us-gov-west-1"
+DEFAULT_AWS_REGION = "us-east-1"
+POC_WORKSPACE_HOST = "https://dbc-ae83c2ba-d87c.cloud.databricks.com"
+POC_WORKSPACE_ORG_ID = "7474653232339519"
+POC_WORKSPACE_FOLDER = "/Workspace/Users/joshua.strickland@satsyil.com/onr_itss_poc"
 
 
 @dataclass(frozen=True)

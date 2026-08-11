@@ -15,7 +15,10 @@
 # MAGIC | 7 | `07_element_secure_export` | 7 — CSV/JSON/Parquet + APIs |
 # MAGIC | 8 | `docs/STRATEGIC_PROMPTS.md` | 11.4 a–e (spoken, no slides) |
 # MAGIC
-# MAGIC Script: `docs/DEMO_SCRIPT.md`. Install: `INSTALL.md`.
+# MAGIC Script: `docs/DEMO_SCRIPT.md`. Install: `INSTALL.md`. Workspace: `WORKSPACE.md`.
+# MAGIC
+# MAGIC **This POC host:** `https://dbc-ae83c2ba-d87c.cloud.databricks.com/?o=7474653232339519`  
+# MAGIC **Folder:** `/Workspace/Users/joshua.strickland@satsyil.com/onr_itss_poc`
 # MAGIC
 # MAGIC **Data constraint:** mock unclassified only. If you see a real name, SSN, or CUI marking — stop the recording.
 

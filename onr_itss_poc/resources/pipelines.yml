@@ -22,8 +22,5 @@ resources:
             - on-update-failure
             - on-update-fatal-failure
           email_recipients: []
-      permissions:
-        - level: CAN_MANAGE
-          group_name: ${var.engineers_group}
-        - level: CAN_VIEW
-          group_name: ${var.analysts_group}
+      # Group ACLs omitted so the commercial POC deploy works before
+      # onr_data_engineers / onr_analysts exist. Owner = deploying user.

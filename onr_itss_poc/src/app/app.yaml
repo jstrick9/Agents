@@ -15,3 +15,5 @@ env:
     value: onr_itss_dev
   - name: ONR_SCHEMA
     value: da_platform
+  - name: ONR_WORKSPACE_HOST
+    value: https://dbc-ae83c2ba-d87c.cloud.databricks.com
