@@ -108,6 +108,14 @@ with tab_p:
 
 with tab_a:
     st.caption("Automated flags routed to an owner. Approve writes an audited row — pipeline MV is not updated in place.")
+    try:
+        execute(
+            f"""CREATE TABLE IF NOT EXISTS {fqn('gold_approval_log')} (
+                  grant_id STRING, anomaly_type STRING, decision STRING,
+                  decided_by STRING, decided_ts TIMESTAMP) USING DELTA"""
+        )
+    except Exception:
+        pass
     anoms = query(
         f"""
         SELECT a.grant_id, a.anomaly_type, a.severity, a.description, a.route_to, a.detected_ts,
