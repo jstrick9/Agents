@@ -151,12 +151,22 @@ display(spark.table(f"{catalog}.{schema}.gold_predictive_velocity").orderBy("awa
 # MAGIC %md
 # MAGIC ## Element 6 — Dashboard, App, automation
 # MAGIC 1. Open Lakeview **ONR Executive D and A** — KPI strip for the brief.
-# MAGIC 2. Open App **onr-exec-app-dev** — search, filter, extract, anomalies (no code).
+# MAGIC 2. Open the Streamlit App — search, filter, extract, **Approve** an anomaly (no code).
 # MAGIC
-# MAGIC Automated summary / anomaly routing are pipeline tables the App reads.
+# MAGIC Automated summary / `route_to` come from the pipeline. Approve writes `gold_approval_log`.
 
 # COMMAND ----------
 
+spark.sql(f"""
+CREATE TABLE IF NOT EXISTS {catalog}.{schema}.gold_approval_log (
+  grant_id STRING,
+  anomaly_type STRING,
+  decision STRING,
+  decided_by STRING,
+  decided_ts TIMESTAMP
+) USING DELTA
+COMMENT 'Writable approval log for the App (Element 6). Pipeline MV gold_anomalies stays append-only.'
+""")
 display(spark.table(f"{catalog}.{schema}.gold_executive_kpis"))
 display(spark.table(f"{catalog}.{schema}.gold_executive_summary"))
 display(spark.table(f"{catalog}.{schema}.gold_anomalies"))
@@ -184,8 +194,21 @@ display(spark.sql(f"SHOW CREATE TABLE {catalog}.{schema}.gold_financial_executio
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC **Prompt (c):** no public URL — `READ VOLUME` is continuous authorization.  
-# MAGIC **Prompt (a):** legacy reports pull this Parquet until they cut over.
+# MAGIC **Advana / Cloud One API** — same filtered extract, open SQL over HTTPS. Bearer token is continuous authorization (no static export URL).
+
+# COMMAND ----------
+
+host = spark.conf.get("spark.databricks.workspaceUrl", "dbc-ae83c2ba-d87c.cloud.databricks.com")
+print(f"""curl -sS -X POST "https://{host}/api/2.0/sql/statements" \\
+  -H "Authorization: Bearer $DATABRICKS_TOKEN" \\
+  -H "Content-Type: application/json" \\
+  -d '{{"warehouse_id":"<sql-warehouse-id>","catalog":"{catalog}","schema":"{schema}","wait_timeout":"30s","statement":"SELECT grant_id, risk_class, projected_total FROM gold_financial_execution WHERE risk_class = \\'OVERRUN\\'"}}'""")
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC **Prompt (c):** no public URL — `READ VOLUME` / API token is continuous authorization.  
+# MAGIC **Prompt (a):** legacy reports pull this Parquet (or the same SQL) until they cut over.
 # MAGIC
 # MAGIC ### Done
 # MAGIC Stay in the App for search / filter / extract. Narrate any remaining prompt from `docs/DEMO_SCRIPT.md`.

@@ -62,6 +62,19 @@ write(f"{landing}/_demo/live_drop_element3.jsonl", json.dumps(build_demo_drop_fi
 write(f"{landing}/financial/fy26_execution.csv", csv_text(build_financial(grants)))
 write_jsonl(f"{landing}/vendors/subscriptions.jsonl", build_vendors())
 
+run(
+    f"""
+    CREATE TABLE IF NOT EXISTS {catalog}.{schema}.gold_approval_log (
+      grant_id STRING,
+      anomaly_type STRING,
+      decision STRING,
+      decided_by STRING,
+      decided_ts TIMESTAMP
+    ) USING DELTA
+    COMMENT 'App writes Approve/Reject here. Element 6.'
+    """
+)
+
 print("Seeded", landing)
 display(dbutils.fs.ls(f"{landing}/grants"))
 display(dbutils.fs.ls(f"{landing}/financial"))

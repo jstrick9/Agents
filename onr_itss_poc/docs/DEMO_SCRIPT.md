@@ -11,8 +11,8 @@
 | 0:05–0:16 | **Element 3.** DEMO: landing files, bronze vs silver drop, `collaboration_flag`, live file drop, refresh pipeline, query `MOCK-ONR-N00014-26-C-0901`. Narrate Kinesis as the bus path. |
 | 0:16–0:23 | **Element 4.** Catalog Explorer + DEMO quality + lineage SQL. Point at lapsed vendor. |
 | 0:23–0:32 | **Element 5.** DEMO model cell. Walk OVERRUN / UNDER_EXEC as leadership actions. |
-| 0:32–0:42 | **Element 6.** Lakeview KPI strip. App: search, filter Code 08, extract CSV, Anomalies, Vendors (DATA_GAP). |
-| 0:42–0:48 | **Element 7.** DEMO export cell — CSV/JSON/Parquet on the Volume. |
+| 0:32–0:42 | **Element 6.** Lakeview KPI strip. App: search, filter Code 08, extract CSV, Anomalies → **Record decision**, Vendors (DATA_GAP). |
+| 0:42–0:48 | **Element 7.** DEMO export cell — CSV/JSON/Parquet, then the printed Advana/Cloud One `curl`. |
 | 0:48–0:50 | Close remaining prompts. Stop. |
 
 ## Prompts (speak while clicking — no slides)

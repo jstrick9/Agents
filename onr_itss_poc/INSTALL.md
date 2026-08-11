@@ -36,7 +36,8 @@ If you imported files without the bundle: New pipeline → source `src/pipelines
 Open `src/notebooks/DEMO` → **Run all**.
 
 **App (once):** New → App → Streamlit → source `src/app`.  
-Env: `ONR_CATALOG=onr_itss_poc`, `ONR_SCHEMA=da_platform`. Attach a SQL warehouse.
+Env: `ONR_CATALOG=onr_itss_poc`, `ONR_SCHEMA=da_platform`. Attach a SQL warehouse.  
+Grant the App **CAN_MODIFY** on `onr_itss_poc.da_platform.gold_approval_log` so Approve works.
 
 **Lakeview (once):** Import `src/dashboards/onr_executive.lvdash.json` (or New dashboard and bind the gold tables). Set parameters catalog=`onr_itss_poc`, schema=`da_platform`.
 

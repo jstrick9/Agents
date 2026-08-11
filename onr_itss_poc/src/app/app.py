@@ -38,6 +38,15 @@ def query(sql_text: str) -> pd.DataFrame:
     return pd.DataFrame(rows, columns=cols)
 
 
+def execute(sql_text: str) -> None:
+    with _conn().cursor() as cur:
+        cur.execute(sql_text)
+
+
+def _ident(value: str) -> str:
+    return "".join(ch for ch in value if ch.isalnum() or ch in "-_")
+
+
 st.set_page_config(page_title="ONR Executive D&A", layout="wide")
 st.title("ONR Code 08 — Executive Data & Analytics")
 st.caption("Mock unclassified. Search / filter / extract — no notebook required.")
@@ -98,12 +107,43 @@ with tab_p:
     st.caption(f"{len(port)} awards")
 
 with tab_a:
-    st.caption("Automated flags with a route_to owner (Element 6 process automation).")
-    st.dataframe(
-        query(f"SELECT grant_id, anomaly_type, severity, description, route_to, detected_ts FROM {fqn('gold_anomalies')}"),
-        use_container_width=True,
-        hide_index=True,
+    st.caption("Automated flags routed to an owner. Approve writes an audited row — pipeline MV is not updated in place.")
+    anoms = query(
+        f"""
+        SELECT a.grant_id, a.anomaly_type, a.severity, a.description, a.route_to, a.detected_ts,
+               COALESCE(d.decision, 'OPEN') AS status, d.decided_by, d.decided_ts
+        FROM {fqn('gold_anomalies')} a
+        LEFT JOIN (
+          SELECT grant_id, anomaly_type, decision, decided_by, decided_ts,
+                 ROW_NUMBER() OVER (PARTITION BY grant_id, anomaly_type ORDER BY decided_ts DESC) AS rn
+          FROM {fqn('gold_approval_log')}
+        ) d ON a.grant_id = d.grant_id AND a.anomaly_type = d.anomaly_type AND d.rn = 1
+        ORDER BY a.detected_ts DESC
+        """
     )
+    st.dataframe(anoms, use_container_width=True, hide_index=True)
+    open_rows = anoms[anoms["status"] == "OPEN"] if not anoms.empty else anoms
+    if open_rows.empty:
+        st.success("No open items.")
+    else:
+        labels = (open_rows["grant_id"].astype(str) + " · " + open_rows["anomaly_type"].astype(str) + " · " + open_rows["severity"].astype(str)).tolist()
+        pick = st.selectbox("Open item", labels)
+        decision = st.radio("Decision", ["APPROVED", "REJECTED"], horizontal=True)
+        if st.button("Record decision"):
+            gid, atype, _ = [p.strip() for p in pick.split("·")]
+            gid, atype = _ident(gid), _ident(atype)
+            try:
+                execute(
+                    f"""INSERT INTO {fqn('gold_approval_log')}
+                        SELECT '{gid}', '{atype}', '{decision}', current_user(), current_timestamp()"""
+                )
+                st.success(f"{decision} recorded for {gid}. Refresh to see status.")
+                st.rerun()
+            except Exception as exc:
+                st.error(
+                    f"Could not write gold_approval_log ({exc}). "
+                    "Grant the App CAN_MODIFY on that table, or run DEMO Element 6 first so the table exists."
+                )
 
 with tab_v:
     vend = query(
