@@ -1,0 +1,74 @@
+# ONR ITSS POC — Databricks Asset Bundle (Element 2 IaC)
+# Target: AWS GovCloud / GovCloud DoD (us-gov-west-1), Unity Catalog, serverless-first.
+# Hosts:
+#   GovCloud:     https://<deployment>.cloud.databricks.us
+#   GovCloud DoD: https://<deployment>.cloud.databricks.mil
+#
+# Never put CUI, PII, real program names, or classified strings in
+# job names, tags, git URLs, or other customer-defined fields.
+
+bundle:
+  name: onr_itss_poc
+
+include:
+  - resources/*.yml
+
+sync:
+  include:
+    - src/**
+    - data/**
+    - docs/**
+    - tests/**
+  exclude:
+    - src/dashboards/*.lvdash.json
+
+variables:
+  catalog:
+    description: Unity Catalog catalog (no CUI in the name)
+    default: onr_itss_dev
+  schema:
+    description: Platform schema
+    default: da_platform
+  warehouse_id:
+    description: Serverless SQL warehouse ID (create once, then set per target)
+    default: ""
+  aws_region:
+    description: GovCloud region
+    default: us-gov-west-1
+  engineers_group:
+    description: UC group for pipeline owners
+    default: onr_data_engineers
+  analysts_group:
+    description: UC group for analysts
+    default: onr_analysts
+  executives_group:
+    description: UC group for executive consumers
+    default: onr_executives
+
+targets:
+  dev:
+    mode: development
+    default: true
+    workspace:
+      host: https://<deployment>.cloud.databricks.us
+      root_path: /Workspace/Users/${workspace.current_user.userName}/.bundle/${bundle.name}/${bundle.target}
+    variables:
+      catalog: onr_itss_dev
+      schema: da_platform
+    permissions:
+      - level: CAN_MANAGE
+        group_name: ${var.engineers_group}
+
+  prod:
+    mode: production
+    workspace:
+      host: https://<deployment>.cloud.databricks.mil
+      root_path: /Workspace/Users/svc-onr-itss@example.mil/.bundle/${bundle.name}/${bundle.target}
+    variables:
+      catalog: onr_itss
+      schema: da_platform
+    permissions:
+      - level: CAN_VIEW
+        group_name: ${var.analysts_group}
+      - level: CAN_VIEW
+        group_name: ${var.executives_group}

@@ -1,0 +1,10 @@
+[project]
+name = "onr-itss-poc"
+version = "1.0.0"
+description = "ONR ITSS technical demonstration Elements 3-7 for Databricks on AWS GovCloud"
+requires-python = ">=3.10"
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+addopts = "-q"

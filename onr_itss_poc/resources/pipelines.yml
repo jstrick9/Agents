@@ -1,0 +1,29 @@
+resources:
+  pipelines:
+    onr_medallion:
+      name: onr-itss-medallion-${bundle.target}
+      serverless: true
+      photon: true
+      catalog: ${var.catalog}
+      target: ${var.schema}
+      channel: CURRENT
+      development: ${bundle.target == "dev"}
+      continuous: false
+      configuration:
+        onr.catalog: ${var.catalog}
+        onr.schema: ${var.schema}
+        onr.environment: ${bundle.target}
+        onr.aws_region: ${var.aws_region}
+      libraries:
+        - file:
+            path: ../src/pipelines/bronze_silver_gold.py
+      notifications:
+        - alerts:
+            - on-update-failure
+            - on-update-fatal-failure
+          email_recipients: []
+      permissions:
+        - level: CAN_MANAGE
+          group_name: ${var.engineers_group}
+        - level: CAN_VIEW
+          group_name: ${var.analysts_group}

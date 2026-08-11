@@ -1,0 +1,13 @@
+resources:
+  quality_monitors:
+    financial_execution_monitor:
+      table_name: ${var.catalog}.${var.schema}.gold_financial_execution
+      output_schema_name: ${var.catalog}.${var.schema}
+      assets_dir: /Workspace/Users/${workspace.current_user.userName}/.bundle/${bundle.name}/${bundle.target}/monitoring
+      snapshot: {}
+      schedule:
+        quartz_cron_expression: "0 0 8 * * ?"
+        timezone_id: America/New_York
+      notifications:
+        on_failure:
+          email_addresses: []

@@ -1,0 +1,17 @@
+command:
+  - streamlit
+  - run
+  - app.py
+  - --server.port
+  - "8000"
+  - --server.enableCORS
+  - "false"
+  - --server.enableXsrfProtection
+  - "true"
+env:
+  - name: DATABRICKS_WAREHOUSE_ID
+    valueFrom: sql-warehouse
+  - name: ONR_CATALOG
+    value: onr_itss_dev
+  - name: ONR_SCHEMA
+    value: da_platform

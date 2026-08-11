@@ -1,0 +1,22 @@
+# Agent / presenter checklist (Elements 3–7)
+
+- [ ] Live GovCloud (or designated IL5-equivalent) workspace — not a recording of a simulator
+- [ ] Live Git folder / DAB repo visible
+- [ ] No PowerPoint
+- [ ] Mock data only (`MOCK-ONR-*`, `classification = MOCK_UNCLASSIFIED`)
+- [ ] Key Personnel lead every technical minute
+- [ ] Element 3 file drop actually appears in bronze
+- [ ] Element 3 expectations visible (null id + negative award dropped)
+- [ ] Element 3 schema evolution column `collaboration_flag` visible
+- [ ] Element 3 Kinesis path narrated
+- [ ] Element 4 Catalog Explorer + tags + health scores
+- [ ] Element 4 lineage UI + `system.access.table_lineage`
+- [ ] Element 5 live MLflow run and `gold_predictive_velocity`
+- [ ] Element 6 Lakeview + App search/filter/extract
+- [ ] Element 6 summary / anomalies / approvals / vendor gap
+- [ ] Element 7 CSV + JSON + Parquet on the export Volume
+- [ ] Element 7 OpenAPI / Statement Execution / OpenSharing mentioned
+- [ ] Prompts a–e spoken
+- [ ] IL5 / Zero Trust / PrivateLink spoken
+- [ ] RTO / RPO spoken
+- [ ] Total ≤ 50 minutes
