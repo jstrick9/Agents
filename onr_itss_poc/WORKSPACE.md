@@ -10,7 +10,8 @@
 | Browse folder | https://dbc-ae83c2ba-d87c.cloud.databricks.com/browse/folders/2754726583924232?o=7474653232339519 |
 | Owner | `joshua.strickland@satsyil.com` |
 | Boundary | Commercial AWS Databricks (general host). IL5/GovCloud is the **proposed production** story, not this workspace. |
-| Default UC | `onr_itss_dev.da_platform` — if `CREATE CATALOG` is denied, switch widgets/vars to `main.onr_itss_poc` |
+| Default UC | `workspace.default` (existing; this metastore does not allow `CREATE CATALOG`) |
+| Metastore | `metastore_aws_us_east_2` |
 
 `databricks.yml` target `dev` is already pointed at this host and folder.
 

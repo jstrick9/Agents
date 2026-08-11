@@ -28,16 +28,16 @@ sync:
 variables:
   catalog:
     description: Unity Catalog catalog (no CUI in the name)
-    default: onr_itss_dev
+    default: workspace
   schema:
     description: Platform schema
-    default: da_platform
+    default: default
   warehouse_id:
     description: SQL warehouse ID for Lakeview + App (optional until resources/optional is included)
     default: ""
   aws_region:
     description: AWS region of the workspace (commercial POC; confirm in Admin Console)
-    default: us-east-1
+    default: us-east-2
   workspace_host:
     description: Databricks workspace URL
     default: https://dbc-ae83c2ba-d87c.cloud.databricks.com
@@ -66,9 +66,9 @@ targets:
       host: https://dbc-ae83c2ba-d87c.cloud.databricks.com
       root_path: /Workspace/Users/joshua.strickland@satsyil.com/onr_itss_poc
     variables:
-      catalog: onr_itss_dev
-      schema: da_platform
-      aws_region: us-east-1
+      catalog: workspace
+      schema: default
+      aws_region: us-east-2
       workspace_host: https://dbc-ae83c2ba-d87c.cloud.databricks.com
       workspace_org_id: "7474653232339519"
       workspace_folder: /Workspace/Users/joshua.strickland@satsyil.com/onr_itss_poc

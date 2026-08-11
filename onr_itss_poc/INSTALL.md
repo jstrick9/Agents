@@ -17,7 +17,7 @@ More detail: [WORKSPACE.md](WORKSPACE.md).
 ## 0. Prerequisites
 
 - Access to the folder above as `joshua.strickland@satsyil.com`
-- Privilege to `CREATE SCHEMA` (and ideally `CREATE CATALOG`). If catalog create is denied, use `main` + schema `onr_itss_poc`
+- Use existing UC: catalog `workspace`, schema `default` (no `CREATE CATALOG` needed)
 - A SQL warehouse when you are ready for Lakeview / the App (not required for notebooks + pipeline)
 - **Mock data only** in `landing/`
 
@@ -61,9 +61,9 @@ Copy `src/`, `data/`, `docs/` into the folder in the UI.
 In the workspace, run in order:
 
 1. `src/setup/00_uc_bootstrap`  
-   - Default: `onr_itss_dev.da_platform`  
-   - If `CREATE CATALOG` fails, set widget `catalog` = `main` and `schema` = `onr_itss_poc`, re-run  
-   - Leave `apply_group_grants` = `false` unless those account groups exist
+   - Widgets: `catalog` = `workspace`, `schema` = `default`  
+   - If an earlier run left `onr_itss_dev` in the widget, change it — old widget values stick  
+   - Leave `apply_group_grants` = `false`
 2. `src/setup/01_seed_mock_data` (same catalog/schema widgets)
 
 Or from CLI (after deploy):
@@ -167,7 +167,7 @@ pytest tests/ -q
 
 ```bash
 databricks bundle destroy -t dev
-# DROP CATALOG onr_itss_dev CASCADE;   -- only if you created it and want it gone
+# DROP SCHEMA main.onr_itss_poc CASCADE;   -- only if you want the POC schema gone
 ```
 
 Destroy does **not** delete the Git folder.
@@ -178,7 +178,7 @@ Destroy does **not** delete the Git folder.
 
 | Symptom | Fix |
 |---|---|
-| `CREATE CATALOG` denied | Widget `catalog=main`, `schema=onr_itss_poc`, re-run bootstrap |
+| `CREATE CATALOG` / `NO_SUCH_CATALOG onr_itss_dev` | Expected. Set widgets `catalog=workspace` and `schema=default`, then Run all |
 | Pipeline cannot see `/Volumes/...` | Bootstrap did not succeed; widgets ≠ pipeline config |
 | Groups not found | Leave `apply_group_grants=false` |
 | App / dashboard deploy fails | Do not include `resources/optional` until `warehouse_id` is set |

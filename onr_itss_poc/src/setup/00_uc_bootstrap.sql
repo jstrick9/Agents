@@ -3,7 +3,7 @@
 -- MAGIC # 00 — Unity Catalog bootstrap (run first)
 -- MAGIC **Purpose:** Create the IL5-safe catalog, schema, managed volumes, tags, and group grants for the ONR ITSS POC.
 -- MAGIC
--- MAGIC **Catalog/schema:** widgets `catalog` / `schema` (defaults `onr_itss_dev.da_platform`)
+-- MAGIC **Catalog/schema:** widgets `catalog` / `schema` (defaults `main.onr_itss_poc`)
 -- MAGIC
 -- MAGIC **IL5 notes**
 -- MAGIC - Names contain no CUI, PII, or program identifiers (GovCloud name-field rule).
@@ -15,8 +15,8 @@
 
 -- COMMAND ----------
 
-CREATE WIDGET TEXT catalog DEFAULT 'onr_itss_dev';
-CREATE WIDGET TEXT schema DEFAULT 'da_platform';
+CREATE WIDGET TEXT catalog DEFAULT 'workspace';
+CREATE WIDGET TEXT schema DEFAULT 'default';
 CREATE WIDGET TEXT engineers_group DEFAULT 'onr_data_engineers';
 CREATE WIDGET TEXT analysts_group DEFAULT 'onr_analysts';
 CREATE WIDGET TEXT executives_group DEFAULT 'onr_executives';

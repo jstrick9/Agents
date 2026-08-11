@@ -10,8 +10,8 @@
         "FROM IDENTIFIER(:catalog || '.' || :schema || '.gold_executive_kpis')"
       ],
       "parameters": [
-        { "name": "catalog", "keyword": "catalog", "defaultSelection": { "values": { "values": [ { "value": "onr_itss_dev" } ] } } },
-        { "name": "schema", "keyword": "schema", "defaultSelection": { "values": { "values": [ { "value": "da_platform" } ] } } }
+        { "name": "catalog", "keyword": "catalog", "defaultSelection": { "values": { "values": [ { "value": "workspace" } ] } } },
+        { "name": "schema", "keyword": "schema", "defaultSelection": { "values": { "values": [ { "value": "default" } ] } } }
       ]
     },
     {
@@ -24,8 +24,8 @@
         "FROM IDENTIFIER(:catalog || '.' || :schema || '.gold_financial_execution')"
       ],
       "parameters": [
-        { "name": "catalog", "keyword": "catalog", "defaultSelection": { "values": { "values": [ { "value": "onr_itss_dev" } ] } } },
-        { "name": "schema", "keyword": "schema", "defaultSelection": { "values": { "values": [ { "value": "da_platform" } ] } } }
+        { "name": "catalog", "keyword": "catalog", "defaultSelection": { "values": { "values": [ { "value": "workspace" } ] } } },
+        { "name": "schema", "keyword": "schema", "defaultSelection": { "values": { "values": [ { "value": "default" } ] } } }
       ]
     },
     {
@@ -38,8 +38,8 @@
         "GROUP BY onr_code"
       ],
       "parameters": [
-        { "name": "catalog", "keyword": "catalog", "defaultSelection": { "values": { "values": [ { "value": "onr_itss_dev" } ] } } },
-        { "name": "schema", "keyword": "schema", "defaultSelection": { "values": { "values": [ { "value": "da_platform" } ] } } }
+        { "name": "catalog", "keyword": "catalog", "defaultSelection": { "values": { "values": [ { "value": "workspace" } ] } } },
+        { "name": "schema", "keyword": "schema", "defaultSelection": { "values": { "values": [ { "value": "default" } ] } } }
       ]
     },
     {
@@ -51,8 +51,8 @@
         "FROM IDENTIFIER(:catalog || '.' || :schema || '.gold_vendor_lifecycle')"
       ],
       "parameters": [
-        { "name": "catalog", "keyword": "catalog", "defaultSelection": { "values": { "values": [ { "value": "onr_itss_dev" } ] } } },
-        { "name": "schema", "keyword": "schema", "defaultSelection": { "values": { "values": [ { "value": "da_platform" } ] } } }
+        { "name": "catalog", "keyword": "catalog", "defaultSelection": { "values": { "values": [ { "value": "workspace" } ] } } },
+        { "name": "schema", "keyword": "schema", "defaultSelection": { "values": { "values": [ { "value": "default" } ] } } }
       ]
     },
     {
@@ -63,8 +63,8 @@
         "FROM IDENTIFIER(:catalog || '.' || :schema || '.gold_executive_summary')"
       ],
       "parameters": [
-        { "name": "catalog", "keyword": "catalog", "defaultSelection": { "values": { "values": [ { "value": "onr_itss_dev" } ] } } },
-        { "name": "schema", "keyword": "schema", "defaultSelection": { "values": { "values": [ { "value": "da_platform" } ] } } }
+        { "name": "catalog", "keyword": "catalog", "defaultSelection": { "values": { "values": [ { "value": "workspace" } ] } } },
+        { "name": "schema", "keyword": "schema", "defaultSelection": { "values": { "values": [ { "value": "default" } ] } } }
       ]
     },
     {
@@ -75,8 +75,8 @@
         "FROM IDENTIFIER(:catalog || '.' || :schema || '.gold_data_quality_scores')"
       ],
       "parameters": [
-        { "name": "catalog", "keyword": "catalog", "defaultSelection": { "values": { "values": [ { "value": "onr_itss_dev" } ] } } },
-        { "name": "schema", "keyword": "schema", "defaultSelection": { "values": { "values": [ { "value": "da_platform" } ] } } }
+        { "name": "catalog", "keyword": "catalog", "defaultSelection": { "values": { "values": [ { "value": "workspace" } ] } } },
+        { "name": "schema", "keyword": "schema", "defaultSelection": { "values": { "values": [ { "value": "default" } ] } } }
       ]
     },
     {
@@ -87,8 +87,8 @@
         "FROM IDENTIFIER(:catalog || '.' || :schema || '.gold_approval_queue')"
       ],
       "parameters": [
-        { "name": "catalog", "keyword": "catalog", "defaultSelection": { "values": { "values": [ { "value": "onr_itss_dev" } ] } } },
-        { "name": "schema", "keyword": "schema", "defaultSelection": { "values": { "values": [ { "value": "da_platform" } ] } } }
+        { "name": "catalog", "keyword": "catalog", "defaultSelection": { "values": { "values": [ { "value": "workspace" } ] } } },
+        { "name": "schema", "keyword": "schema", "defaultSelection": { "values": { "values": [ { "value": "default" } ] } } }
       ]
     }
   ],

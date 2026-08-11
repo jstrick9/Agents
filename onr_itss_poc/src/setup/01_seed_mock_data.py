@@ -14,8 +14,8 @@
 
 # COMMAND ----------
 
-dbutils.widgets.text("catalog", "onr_itss_dev")
-dbutils.widgets.text("schema", "da_platform")
+dbutils.widgets.text("catalog", "workspace")
+dbutils.widgets.text("schema", "default")
 catalog = dbutils.widgets.get("catalog")
 schema = dbutils.widgets.get("schema")
 
@@ -53,6 +53,14 @@ from src.common.mock_data import (  # noqa: E402
 )
 
 # COMMAND ----------
+
+existing = [r[0] for r in spark.sql("SHOW CATALOGS").collect()]
+if catalog not in existing:
+    raise RuntimeError(
+        f"Catalog '{catalog}' does not exist and you cannot CREATE CATALOG on this metastore. "
+        f"Set the catalog widget to an existing catalog (try 'main' or 'workspace'). "
+        f"Visible catalogs: {existing}"
+    )
 
 landing = f"/Volumes/{catalog}/{schema}/landing"
 spark.sql(f"USE CATALOG {catalog}")
@@ -94,10 +102,10 @@ print("Seeded landing volume:")
 for p in [
     f"{landing}/grants/batch_001.jsonl",
     f"{landing}/grants/batch_002_schema_evolution.jsonl",
-    f"{landing}/grants/_held/live_drop_element3.json",
+    f"{landing}/_demo/live_drop_element3.jsonl",
     f"{landing}/financial/fy26_execution.csv",
     f"{landing}/financial/fy26_execution_variant.csv",
-    f"{landing}/vendors/subscriptions.json",
+    f"{landing}/vendors/subscriptions.jsonl",
 ]:
     print(" ", p)
 

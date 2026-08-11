@@ -18,8 +18,8 @@ import streamlit as st
 from databricks import sql
 from databricks.sdk.core import Config
 
-CATALOG = os.environ.get("ONR_CATALOG", "onr_itss_dev")
-SCHEMA = os.environ.get("ONR_SCHEMA", "da_platform")
+CATALOG = os.environ.get("ONR_CATALOG", "workspace")
+SCHEMA = os.environ.get("ONR_SCHEMA", "default")
 WAREHOUSE_ID = os.environ.get("DATABRICKS_WAREHOUSE_ID", "")
 
 

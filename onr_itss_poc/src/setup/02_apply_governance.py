@@ -6,8 +6,8 @@
 
 # COMMAND ----------
 
-dbutils.widgets.text("catalog", "onr_itss_dev")
-dbutils.widgets.text("schema", "da_platform")
+dbutils.widgets.text("catalog", "workspace")
+dbutils.widgets.text("schema", "default")
 dbutils.widgets.text("analysts_group", "onr_analysts")
 dbutils.widgets.text("executives_group", "onr_executives")
 catalog = dbutils.widgets.get("catalog")

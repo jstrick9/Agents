@@ -37,8 +37,8 @@ paths:
               overrunExtract:
                 value:
                   warehouse_id: "<serverless-warehouse-id>"
-                  catalog: onr_itss_dev
-                  schema: da_platform
+                  catalog: workspace
+                  schema: default
                   wait_timeout: 30s
                   statement: >
                     SELECT grant_id, project_name, onr_code, award_amount,
@@ -48,8 +48,8 @@ paths:
               kpis:
                 value:
                   warehouse_id: "<serverless-warehouse-id>"
-                  catalog: onr_itss_dev
-                  schema: da_platform
+                  catalog: workspace
+                  schema: default
                   wait_timeout: 15s
                   statement: SELECT * FROM gold_executive_kpis
       responses:
@@ -79,10 +79,10 @@ components:
           type: string
         catalog:
           type: string
-          example: onr_itss_dev
+          example: workspace
         schema:
           type: string
-          example: da_platform
+          example: default
         statement:
           type: string
         wait_timeout:

@@ -10,9 +10,9 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Optional
 
-DEFAULT_CATALOG = "onr_itss_dev"
-DEFAULT_SCHEMA = "da_platform"
-DEFAULT_AWS_REGION = "us-east-1"
+DEFAULT_CATALOG = "workspace"
+DEFAULT_SCHEMA = "default"
+DEFAULT_AWS_REGION = "us-east-2"
 POC_WORKSPACE_HOST = "https://dbc-ae83c2ba-d87c.cloud.databricks.com"
 POC_WORKSPACE_ORG_ID = "7474653232339519"
 POC_WORKSPACE_FOLDER = "/Workspace/Users/joshua.strickland@satsyil.com/onr_itss_poc"

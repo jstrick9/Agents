@@ -15,8 +15,8 @@
 
 # COMMAND ----------
 
-dbutils.widgets.text("catalog", "onr_itss_dev")
-dbutils.widgets.text("schema", "da_platform")
+dbutils.widgets.text("catalog", "workspace")
+dbutils.widgets.text("schema", "default")
 dbutils.widgets.dropdown("export_format", "all", ["all", "csv", "json", "parquet"])
 dbutils.widgets.text("filter_code", "")
 dbutils.widgets.text("filter_risk", "")

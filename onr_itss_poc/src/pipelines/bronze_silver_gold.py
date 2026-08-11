@@ -27,8 +27,8 @@ def _cfg(key: str, default: str) -> str:
             return default
 
 
-CATALOG = _cfg("onr.catalog", "onr_itss_dev")
-SCHEMA = _cfg("onr.schema", "da_platform")
+CATALOG = _cfg("onr.catalog", "workspace")
+SCHEMA = _cfg("onr.schema", "default")
 LANDING = f"/Volumes/{CATALOG}/{SCHEMA}/landing"
 SCHEMAS = f"/Volumes/{CATALOG}/{SCHEMA}/checkpoints/schemas"
 

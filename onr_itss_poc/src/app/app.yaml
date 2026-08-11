@@ -12,8 +12,8 @@ env:
   - name: DATABRICKS_WAREHOUSE_ID
     valueFrom: sql-warehouse
   - name: ONR_CATALOG
-    value: onr_itss_dev
+    value: workspace
   - name: ONR_SCHEMA
-    value: da_platform
+    value: default
   - name: ONR_WORKSPACE_HOST
     value: https://dbc-ae83c2ba-d87c.cloud.databricks.com

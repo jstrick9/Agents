@@ -16,8 +16,8 @@
 
 # COMMAND ----------
 
-dbutils.widgets.text("catalog", "onr_itss_dev")
-dbutils.widgets.text("schema", "da_platform")
+dbutils.widgets.text("catalog", "workspace")
+dbutils.widgets.text("schema", "default")
 catalog = dbutils.widgets.get("catalog")
 schema = dbutils.widgets.get("schema")
 spark.sql(f"USE CATALOG {catalog}")
