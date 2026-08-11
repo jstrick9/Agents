@@ -1,64 +1,32 @@
-# ONR ITSS POC — Databricks Asset Bundle (Element 2 IaC)
-#
-# Default target (dev) is the commercial POC workspace:
-#   https://dbc-ae83c2ba-d87c.cloud.databricks.com/?o=7474653232339519
-#   Folder: /Workspace/Users/joshua.strickland@satsyil.com/onr_itss_poc
-#   Folder id: 2754726583924232
-#
-# IL5 / GovCloud remains the proposed production boundary (target: govcloud).
-# Never put CUI, PII, or classified strings in job names, tags, or Git URLs.
+# ONR ITSS POC — Databricks Asset Bundle
+# Workspace: https://dbc-ae83c2ba-d87c.cloud.databricks.com/?o=7474653232339519
+# Folder:    /Workspace/Users/joshua.strickland@satsyil.com/onr_itss_poc
+# Catalog:   onr_itss_poc.da_platform
 
 bundle:
   name: onr_itss_poc
 
 include:
   - resources/*.yml
-  # After a SQL warehouse exists, also include:
-  # - resources/optional/*.yml
 
 sync:
   include:
     - src/**
     - data/**
     - docs/**
-    - tests/**
   exclude:
     - src/dashboards/*.lvdash.json
 
 variables:
   catalog:
-    description: Unity Catalog catalog (no CUI in the name)
-    default: workspace
+    default: onr_itss_poc
   schema:
-    description: Platform schema
-    default: default
+    default: da_platform
   warehouse_id:
-    description: SQL warehouse ID for Lakeview + App (optional until resources/optional is included)
+    description: SQL warehouse id (required for the App and Lakeview)
     default: ""
-  aws_region:
-    description: AWS region of the workspace (commercial POC; confirm in Admin Console)
-    default: us-east-2
-  workspace_host:
-    description: Databricks workspace URL
-    default: https://dbc-ae83c2ba-d87c.cloud.databricks.com
-  workspace_org_id:
-    description: Workspace org id (o=)
-    default: "7474653232339519"
-  workspace_folder:
-    description: Workspace folder that receives the bundle
-    default: /Workspace/Users/joshua.strickland@satsyil.com/onr_itss_poc
-  engineers_group:
-    description: Optional UC group for pipeline owners (not required on first deploy)
-    default: onr_data_engineers
-  analysts_group:
-    description: Optional UC group for analysts
-    default: onr_analysts
-  executives_group:
-    description: Optional UC group for executive consumers
-    default: onr_executives
 
 targets:
-  # Commercial POC — Joshua Strickland workspace
   dev:
     mode: development
     default: true
@@ -66,20 +34,5 @@ targets:
       host: https://dbc-ae83c2ba-d87c.cloud.databricks.com
       root_path: /Workspace/Users/joshua.strickland@satsyil.com/onr_itss_poc
     variables:
-      catalog: workspace
-      schema: default
-      aws_region: us-east-2
-      workspace_host: https://dbc-ae83c2ba-d87c.cloud.databricks.com
-      workspace_org_id: "7474653232339519"
-      workspace_folder: /Workspace/Users/joshua.strickland@satsyil.com/onr_itss_poc
-
-  # Proposed IL5 production shape (not this POC host)
-  govcloud:
-    mode: production
-    workspace:
-      host: https://<deployment>.cloud.databricks.mil
-      root_path: /Workspace/Users/svc-onr-itss@example.mil/.bundle/${bundle.name}/${bundle.target}
-    variables:
-      catalog: onr_itss
+      catalog: onr_itss_poc
       schema: da_platform
-      aws_region: us-gov-west-1

@@ -1,19 +1,8 @@
-command:
-  - streamlit
-  - run
-  - app.py
-  - --server.port
-  - "8000"
-  - --server.enableCORS
-  - "false"
-  - --server.enableXsrfProtection
-  - "true"
+command: ["streamlit", "run", "app.py", "--server.port", "8000", "--server.enableCORS", "false"]
 env:
   - name: DATABRICKS_WAREHOUSE_ID
     valueFrom: sql-warehouse
   - name: ONR_CATALOG
-    value: workspace
+    value: onr_itss_poc
   - name: ONR_SCHEMA
-    value: default
-  - name: ONR_WORKSPACE_HOST
-    value: https://dbc-ae83c2ba-d87c.cloud.databricks.com
+    value: da_platform

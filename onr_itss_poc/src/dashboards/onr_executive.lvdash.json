@@ -4,91 +4,75 @@
       "name": "ds_kpis",
       "displayName": "Executive KPIs",
       "queryLines": [
-        "SELECT grant_count, total_awarded, total_expended, total_obligated, execution_rate,",
-        "       overrun_count, at_risk_count, under_exec_count, on_track_count,",
-        "       avg_monthly_velocity, vendor_data_gaps, vendor_renewals_due, as_of_ts",
+        "SELECT grant_count, total_awarded, total_expended, execution_rate,",
+        "       overrun_count, at_risk_count, avg_monthly_velocity, vendor_data_gaps, as_of_ts",
         "FROM IDENTIFIER(:catalog || '.' || :schema || '.gold_executive_kpis')"
       ],
       "parameters": [
-        { "name": "catalog", "keyword": "catalog", "defaultSelection": { "values": { "values": [ { "value": "workspace" } ] } } },
-        { "name": "schema", "keyword": "schema", "defaultSelection": { "values": { "values": [ { "value": "default" } ] } } }
+        { "name": "catalog", "keyword": "catalog", "defaultSelection": { "values": { "values": [ { "value": "onr_itss_poc" } ] } } },
+        { "name": "schema", "keyword": "schema", "defaultSelection": { "values": { "values": [ { "value": "da_platform" } ] } } }
       ]
     },
     {
       "name": "ds_execution",
       "displayName": "Financial execution",
       "queryLines": [
-        "SELECT grant_id, project_name, onr_code, tech_area, appropriation, award_amount,",
-        "       expended, obligated, projected_total, risk_class, trend_id,",
-        "       predicted_velocity, months_to_exhaustion",
+        "SELECT grant_id, project_name, onr_code, tech_area, award_amount,",
+        "       expended, projected_total, risk_class, trend_id, predicted_velocity",
         "FROM IDENTIFIER(:catalog || '.' || :schema || '.gold_financial_execution')"
       ],
       "parameters": [
-        { "name": "catalog", "keyword": "catalog", "defaultSelection": { "values": { "values": [ { "value": "workspace" } ] } } },
-        { "name": "schema", "keyword": "schema", "defaultSelection": { "values": { "values": [ { "value": "default" } ] } } }
+        { "name": "catalog", "keyword": "catalog", "defaultSelection": { "values": { "values": [ { "value": "onr_itss_poc" } ] } } },
+        { "name": "schema", "keyword": "schema", "defaultSelection": { "values": { "values": [ { "value": "da_platform" } ] } } }
       ]
     },
     {
       "name": "ds_by_code",
       "displayName": "Execution by ONR code",
       "queryLines": [
-        "SELECT onr_code, COUNT(*) AS grants, SUM(award_amount) AS awarded, SUM(expended) AS expended,",
-        "       SUM(CASE WHEN risk_class = 'OVERRUN' THEN 1 ELSE 0 END) AS overruns",
+        "SELECT onr_code, COUNT(*) AS grants, SUM(award_amount) AS awarded, SUM(expended) AS expended",
         "FROM IDENTIFIER(:catalog || '.' || :schema || '.gold_financial_execution')",
         "GROUP BY onr_code"
       ],
       "parameters": [
-        { "name": "catalog", "keyword": "catalog", "defaultSelection": { "values": { "values": [ { "value": "workspace" } ] } } },
-        { "name": "schema", "keyword": "schema", "defaultSelection": { "values": { "values": [ { "value": "default" } ] } } }
+        { "name": "catalog", "keyword": "catalog", "defaultSelection": { "values": { "values": [ { "value": "onr_itss_poc" } ] } } },
+        { "name": "schema", "keyword": "schema", "defaultSelection": { "values": { "values": [ { "value": "da_platform" } ] } } }
       ]
     },
     {
       "name": "ds_vendors",
-      "displayName": "Vendor lifecycle",
+      "displayName": "Vendors",
       "queryLines": [
-        "SELECT subscription_id, vendor_name, dataset_name, status, gap_status,",
-        "       days_to_renewal, usage_pct, annual_cost, feeds_gold_table",
-        "FROM IDENTIFIER(:catalog || '.' || :schema || '.gold_vendor_lifecycle')"
+        "SELECT vendor_name, dataset_name, status, gap_status, days_to_renewal",
+        "FROM IDENTIFIER(:catalog || '.' || :schema || '.gold_vendors')"
       ],
       "parameters": [
-        { "name": "catalog", "keyword": "catalog", "defaultSelection": { "values": { "values": [ { "value": "workspace" } ] } } },
-        { "name": "schema", "keyword": "schema", "defaultSelection": { "values": { "values": [ { "value": "default" } ] } } }
+        { "name": "catalog", "keyword": "catalog", "defaultSelection": { "values": { "values": [ { "value": "onr_itss_poc" } ] } } },
+        { "name": "schema", "keyword": "schema", "defaultSelection": { "values": { "values": [ { "value": "da_platform" } ] } } }
       ]
     },
     {
       "name": "ds_summary",
       "displayName": "Automated summary",
       "queryLines": [
-        "SELECT generated_ts, summary_text, generator",
+        "SELECT generated_ts, summary_text",
         "FROM IDENTIFIER(:catalog || '.' || :schema || '.gold_executive_summary')"
       ],
       "parameters": [
-        { "name": "catalog", "keyword": "catalog", "defaultSelection": { "values": { "values": [ { "value": "workspace" } ] } } },
-        { "name": "schema", "keyword": "schema", "defaultSelection": { "values": { "values": [ { "value": "default" } ] } } }
+        { "name": "catalog", "keyword": "catalog", "defaultSelection": { "values": { "values": [ { "value": "onr_itss_poc" } ] } } },
+        { "name": "schema", "keyword": "schema", "defaultSelection": { "values": { "values": [ { "value": "da_platform" } ] } } }
       ]
     },
     {
-      "name": "ds_quality",
-      "displayName": "Data health scores",
+      "name": "ds_anomalies",
+      "displayName": "Anomalies",
       "queryLines": [
-        "SELECT dataset, row_count, null_rate, freshness_hours, health_score, health_band",
-        "FROM IDENTIFIER(:catalog || '.' || :schema || '.gold_data_quality_scores')"
+        "SELECT grant_id, anomaly_type, severity, description, route_to",
+        "FROM IDENTIFIER(:catalog || '.' || :schema || '.gold_anomalies')"
       ],
       "parameters": [
-        { "name": "catalog", "keyword": "catalog", "defaultSelection": { "values": { "values": [ { "value": "workspace" } ] } } },
-        { "name": "schema", "keyword": "schema", "defaultSelection": { "values": { "values": [ { "value": "default" } ] } } }
-      ]
-    },
-    {
-      "name": "ds_queue",
-      "displayName": "Approval queue",
-      "queryLines": [
-        "SELECT grant_id, anomaly_type, severity, description, route_to, status, sla_hours",
-        "FROM IDENTIFIER(:catalog || '.' || :schema || '.gold_approval_queue')"
-      ],
-      "parameters": [
-        { "name": "catalog", "keyword": "catalog", "defaultSelection": { "values": { "values": [ { "value": "workspace" } ] } } },
-        { "name": "schema", "keyword": "schema", "defaultSelection": { "values": { "values": [ { "value": "default" } ] } } }
+        { "name": "catalog", "keyword": "catalog", "defaultSelection": { "values": { "values": [ { "value": "onr_itss_poc" } ] } } },
+        { "name": "schema", "keyword": "schema", "defaultSelection": { "values": { "values": [ { "value": "da_platform" } ] } } }
       ]
     }
   ],
@@ -101,265 +85,92 @@
         {
           "widget": {
             "name": "t0000001",
-            "textboxSpec": "# ONR Code 08 — Executive Data and Analytics\nMock unclassified demonstration data. Search, filter, and extract from the companion Databricks App for non-technical workflow automation."
+            "textboxSpec": "# ONR Code 08 — Executive Data and Analytics\nMock unclassified. Use the Databricks App to search, filter, and extract."
           },
           "position": { "x": 0, "y": 0, "width": 12, "height": 2 }
         },
         {
           "widget": {
             "name": "c0000001",
-            "queries": [
-              {
-                "name": "main_query",
-                "query": {
-                  "datasetName": "ds_kpis",
-                  "fields": [{ "name": "total_awarded", "expression": "`total_awarded`" }],
-                  "disaggregated": true
-                }
-              }
-            ],
-            "spec": {
-              "version": 2,
-              "widgetType": "counter",
-              "encodings": { "value": { "fieldName": "total_awarded", "displayName": "Total awarded" } }
-            }
+            "queries": [{ "name": "main_query", "query": { "datasetName": "ds_kpis", "fields": [{ "name": "total_awarded", "expression": "`total_awarded`" }], "disaggregated": true } }],
+            "spec": { "version": 2, "widgetType": "counter", "encodings": { "value": { "fieldName": "total_awarded", "displayName": "Total awarded" } } }
           },
           "position": { "x": 0, "y": 2, "width": 3, "height": 3 }
         },
         {
           "widget": {
             "name": "c0000002",
-            "queries": [
-              {
-                "name": "main_query",
-                "query": {
-                  "datasetName": "ds_kpis",
-                  "fields": [{ "name": "execution_rate", "expression": "`execution_rate`" }],
-                  "disaggregated": true
-                }
-              }
-            ],
-            "spec": {
-              "version": 2,
-              "widgetType": "counter",
-              "encodings": { "value": { "fieldName": "execution_rate", "displayName": "Execution rate" } }
-            }
+            "queries": [{ "name": "main_query", "query": { "datasetName": "ds_kpis", "fields": [{ "name": "execution_rate", "expression": "`execution_rate`" }], "disaggregated": true } }],
+            "spec": { "version": 2, "widgetType": "counter", "encodings": { "value": { "fieldName": "execution_rate", "displayName": "Execution rate" } } }
           },
           "position": { "x": 3, "y": 2, "width": 3, "height": 3 }
         },
         {
           "widget": {
             "name": "c0000003",
-            "queries": [
-              {
-                "name": "main_query",
-                "query": {
-                  "datasetName": "ds_kpis",
-                  "fields": [{ "name": "overrun_count", "expression": "`overrun_count`" }],
-                  "disaggregated": true
-                }
-              }
-            ],
-            "spec": {
-              "version": 2,
-              "widgetType": "counter",
-              "encodings": { "value": { "fieldName": "overrun_count", "displayName": "Overruns" } }
-            }
+            "queries": [{ "name": "main_query", "query": { "datasetName": "ds_kpis", "fields": [{ "name": "overrun_count", "expression": "`overrun_count`" }], "disaggregated": true } }],
+            "spec": { "version": 2, "widgetType": "counter", "encodings": { "value": { "fieldName": "overrun_count", "displayName": "Overruns" } } }
           },
           "position": { "x": 6, "y": 2, "width": 3, "height": 3 }
         },
         {
           "widget": {
             "name": "c0000004",
-            "queries": [
-              {
-                "name": "main_query",
-                "query": {
-                  "datasetName": "ds_kpis",
-                  "fields": [{ "name": "vendor_data_gaps", "expression": "`vendor_data_gaps`" }],
-                  "disaggregated": true
-                }
-              }
-            ],
-            "spec": {
-              "version": 2,
-              "widgetType": "counter",
-              "encodings": { "value": { "fieldName": "vendor_data_gaps", "displayName": "Vendor data gaps" } }
-            }
+            "queries": [{ "name": "main_query", "query": { "datasetName": "ds_kpis", "fields": [{ "name": "vendor_data_gaps", "expression": "`vendor_data_gaps`" }], "disaggregated": true } }],
+            "spec": { "version": 2, "widgetType": "counter", "encodings": { "value": { "fieldName": "vendor_data_gaps", "displayName": "Vendor data gaps" } } }
           },
           "position": { "x": 9, "y": 2, "width": 3, "height": 3 }
         },
         {
           "widget": {
             "name": "w0000001",
-            "queries": [
-              {
-                "name": "main_query",
-                "query": {
-                  "datasetName": "ds_by_code",
-                  "fields": [
-                    { "name": "onr_code", "expression": "`onr_code`" },
-                    { "name": "awarded", "expression": "`awarded`" }
-                  ],
-                  "disaggregated": true
-                }
-              }
-            ],
-            "spec": {
-              "version": 3,
-              "widgetType": "bar",
-              "encodings": {
-                "x": { "fieldName": "onr_code", "scale": { "type": "categorical" }, "displayName": "ONR code" },
-                "y": { "fieldName": "awarded", "scale": { "type": "quantitative" }, "displayName": "Awarded" }
-              }
-            }
+            "queries": [{ "name": "main_query", "query": { "datasetName": "ds_by_code", "fields": [{ "name": "onr_code", "expression": "`onr_code`" }, { "name": "awarded", "expression": "`awarded`" }], "disaggregated": true } }],
+            "spec": { "version": 3, "widgetType": "bar", "encodings": { "x": { "fieldName": "onr_code", "scale": { "type": "categorical" }, "displayName": "ONR code" }, "y": { "fieldName": "awarded", "scale": { "type": "quantitative" }, "displayName": "Awarded" } } }
           },
           "position": { "x": 0, "y": 5, "width": 6, "height": 6 }
         },
         {
           "widget": {
             "name": "w0000002",
-            "queries": [
-              {
-                "name": "main_query",
-                "query": {
-                  "datasetName": "ds_execution",
-                  "fields": [
-                    { "name": "risk_class", "expression": "`risk_class`" },
-                    { "name": "grant_id", "expression": "COUNT(`grant_id`)" }
-                  ],
-                  "disaggregated": false
-                }
-              }
-            ],
-            "spec": {
-              "version": 3,
-              "widgetType": "pie",
-              "encodings": {
-                "angle": { "fieldName": "grant_id", "scale": { "type": "quantitative" }, "displayName": "Grants" },
-                "color": { "fieldName": "risk_class", "scale": { "type": "categorical" }, "displayName": "Risk" }
-              }
-            }
+            "queries": [{ "name": "main_query", "query": { "datasetName": "ds_execution", "fields": [{ "name": "risk_class", "expression": "`risk_class`" }, { "name": "grant_id", "expression": "COUNT(`grant_id`)" }], "disaggregated": false } }],
+            "spec": { "version": 3, "widgetType": "pie", "encodings": { "angle": { "fieldName": "grant_id", "scale": { "type": "quantitative" }, "displayName": "Grants" }, "color": { "fieldName": "risk_class", "scale": { "type": "categorical" }, "displayName": "Risk" } } }
           },
           "position": { "x": 6, "y": 5, "width": 6, "height": 6 }
         },
         {
           "widget": {
             "name": "w0000003",
-            "queries": [
-              {
-                "name": "main_query",
-                "query": {
-                  "datasetName": "ds_execution",
-                  "fields": [
-                    { "name": "grant_id", "expression": "`grant_id`" },
-                    { "name": "project_name", "expression": "`project_name`" },
-                    { "name": "onr_code", "expression": "`onr_code`" },
-                    { "name": "award_amount", "expression": "`award_amount`" },
-                    { "name": "projected_total", "expression": "`projected_total`" },
-                    { "name": "risk_class", "expression": "`risk_class`" },
-                    { "name": "trend_id", "expression": "`trend_id`" }
-                  ],
-                  "disaggregated": true
-                }
-              }
-            ],
+            "queries": [{ "name": "main_query", "query": { "datasetName": "ds_execution", "fields": [{ "name": "grant_id", "expression": "`grant_id`" }, { "name": "project_name", "expression": "`project_name`" }, { "name": "risk_class", "expression": "`risk_class`" }, { "name": "trend_id", "expression": "`trend_id`" }], "disaggregated": true } }],
             "spec": { "version": 2, "widgetType": "table", "encodings": {} }
           },
-          "position": { "x": 0, "y": 11, "width": 12, "height": 7 }
+          "position": { "x": 0, "y": 11, "width": 12, "height": 6 }
         },
         {
           "widget": {
             "name": "w0000004",
-            "queries": [
-              {
-                "name": "main_query",
-                "query": {
-                  "datasetName": "ds_vendors",
-                  "fields": [
-                    { "name": "vendor_name", "expression": "`vendor_name`" },
-                    { "name": "dataset_name", "expression": "`dataset_name`" },
-                    { "name": "gap_status", "expression": "`gap_status`" },
-                    { "name": "days_to_renewal", "expression": "`days_to_renewal`" },
-                    { "name": "annual_cost", "expression": "`annual_cost`" }
-                  ],
-                  "disaggregated": true
-                }
-              }
-            ],
+            "queries": [{ "name": "main_query", "query": { "datasetName": "ds_vendors", "fields": [{ "name": "vendor_name", "expression": "`vendor_name`" }, { "name": "gap_status", "expression": "`gap_status`" }, { "name": "days_to_renewal", "expression": "`days_to_renewal`" }], "disaggregated": true } }],
             "spec": { "version": 2, "widgetType": "table", "encodings": {} }
           },
-          "position": { "x": 0, "y": 18, "width": 6, "height": 6 }
+          "position": { "x": 0, "y": 17, "width": 6, "height": 5 }
         },
         {
           "widget": {
             "name": "w0000005",
-            "queries": [
-              {
-                "name": "main_query",
-                "query": {
-                  "datasetName": "ds_quality",
-                  "fields": [
-                    { "name": "dataset", "expression": "`dataset`" },
-                    { "name": "row_count", "expression": "`row_count`" },
-                    { "name": "health_score", "expression": "`health_score`" },
-                    { "name": "health_band", "expression": "`health_band`" }
-                  ],
-                  "disaggregated": true
-                }
-              }
-            ],
+            "queries": [{ "name": "main_query", "query": { "datasetName": "ds_anomalies", "fields": [{ "name": "grant_id", "expression": "`grant_id`" }, { "name": "severity", "expression": "`severity`" }, { "name": "route_to", "expression": "`route_to`" }], "disaggregated": true } }],
             "spec": { "version": 2, "widgetType": "table", "encodings": {} }
           },
-          "position": { "x": 6, "y": 18, "width": 6, "height": 6 }
+          "position": { "x": 6, "y": 17, "width": 6, "height": 5 }
         },
         {
           "widget": {
             "name": "w0000006",
-            "queries": [
-              {
-                "name": "main_query",
-                "query": {
-                  "datasetName": "ds_summary",
-                  "fields": [
-                    { "name": "generated_ts", "expression": "`generated_ts`" },
-                    { "name": "summary_text", "expression": "`summary_text`" }
-                  ],
-                  "disaggregated": true
-                }
-              }
-            ],
+            "queries": [{ "name": "main_query", "query": { "datasetName": "ds_summary", "fields": [{ "name": "summary_text", "expression": "`summary_text`" }], "disaggregated": true } }],
             "spec": { "version": 2, "widgetType": "table", "encodings": {} }
           },
-          "position": { "x": 0, "y": 24, "width": 12, "height": 3 }
-        },
-        {
-          "widget": {
-            "name": "w0000007",
-            "queries": [
-              {
-                "name": "main_query",
-                "query": {
-                  "datasetName": "ds_queue",
-                  "fields": [
-                    { "name": "grant_id", "expression": "`grant_id`" },
-                    { "name": "anomaly_type", "expression": "`anomaly_type`" },
-                    { "name": "severity", "expression": "`severity`" },
-                    { "name": "route_to", "expression": "`route_to`" },
-                    { "name": "status", "expression": "`status`" }
-                  ],
-                  "disaggregated": true
-                }
-              }
-            ],
-            "spec": { "version": 2, "widgetType": "table", "encodings": {} }
-          },
-          "position": { "x": 0, "y": 27, "width": 12, "height": 5 }
+          "position": { "x": 0, "y": 22, "width": 12, "height": 3 }
         }
       ]
     }
   ],
-  "uiSettings": {
-    "genieSpace": false
-  }
+  "uiSettings": { "genieSpace": false }
 }

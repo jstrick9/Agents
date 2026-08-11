@@ -1,27 +1,28 @@
-# 50-minute demonstration script — Elements 3–7 (+ IaC)
+# 50-minute film script — one notebook + App + Lakeview
 
-**Rules (11.2):** live cloud, live repo, no PowerPoint, no heavily edited capture, mock data only, Key Personnel narrate.
+**Rules:** live cloud, live Git folder, no PowerPoint, mock data only, Key Personnel narrate.
 
-**POC workspace:** https://dbc-ae83c2ba-d87c.cloud.databricks.com/?o=7474653232339519  
-**Folder:** `/Workspace/Users/joshua.strickland@satsyil.com/onr_itss_poc`
+**Prep:** `00_bootstrap` green · pipeline Completed · DEMO widgets = `onr_itss_poc` / `da_platform` · App and Lakeview open in tabs.
 
-**Prep (day before)**
+| Clock | What |
+|---|---|
+| 0:00–0:02 | Intro Key Personnel only. |
+| 0:02–0:05 | **Element 2.** Git folder + `databricks.yml`. |
+| 0:05–0:16 | **Element 3.** DEMO: landing files, bronze vs silver drop, `collaboration_flag`, live file drop, refresh pipeline, query `MOCK-ONR-N00014-26-C-0901`. Narrate Kinesis as the bus path. |
+| 0:16–0:23 | **Element 4.** Catalog Explorer + DEMO quality + lineage SQL. Point at lapsed vendor. |
+| 0:23–0:32 | **Element 5.** DEMO model cell. Walk OVERRUN / UNDER_EXEC as leadership actions. |
+| 0:32–0:42 | **Element 6.** Lakeview KPI strip. App: search, filter Code 08, extract CSV, Anomalies, Vendors (DATA_GAP). |
+| 0:42–0:48 | **Element 7.** DEMO export cell — CSV/JSON/Parquet on the Volume. |
+| 0:48–0:50 | Close remaining prompts. Stop. |
 
-1. `databricks bundle deploy -t dev && databricks bundle run bootstrap_and_seed -t dev`
-2. `databricks bundle run onr_medallion` (or start the pipeline once)
-3. `databricks bundle run nightly_validate -t dev` — must print `quality_passed=true`
-4. Confirm Lakeview dashboard and App open
-5. Leave Catalog Explorer, pipeline UI, and the Git folder on separate tabs
+## Prompts (speak while clicking — no slides)
 
-| Clock | Who | What |
-|---|---|---|
-| 0:00–0:02 | Facilitator only | Introduce Key Personnel. No technical narration. |
-| 0:02–0:06 | Chief Enterprise Architect | **Element 2 (IaC).** Open the Git folder. Walk `databricks.yml`, `resources/*.yml`, `.github/workflows`. `bundle deploy` history in the Deployments panel. Optional: `infra/terraform/README.md`. Prompt (c) one sentence: groups, no secrets in Git. |
-| 0:06–0:16 | DevSecOps / Data Engineer | **Element 3.** Notebook `03`. Show landing Volume, pipeline source (`cloudFiles`, expectations, `addNewColumns`). Show bronze vs silver drop of bad rows. Point at `collaboration_flag`. **Live drop** the held file, start a pipeline update, query `MOCK-ONR-N00014-26-C-0901`. Narrate Kinesis as the bus path. Prompt (a) + (d). |
-| 0:16–0:24 | Enterprise Architect | **Element 4.** Notebook `04` + Catalog Explorer. Tables, tags, comments, `gold_data_quality_scores`, vendor `gap_status`. Lineage tab *and* `system.access.table_lineage`. Prompt (e) + (c). |
-| 0:24–0:33 | Data Scientist | **Element 5.** Notebook `05`. Train, log to MLflow UC, write `gold_predictive_velocity`. Walk OVERRUN / UNDER_EXEC as leadership actions. Prompt (b). |
-| 0:33–0:41 | Data Scientist + Architect | **Element 6.** Lakeview KPI strip. App: search, filter Code 08, extract CSV, Anomalies, Approvals, Vendors (lapsed feed). Prompt (b) + (e). |
-| 0:41–0:47 | DevSecOps | **Element 7.** Notebook `07`. Write CSV+JSON+Parquet. `SHOW CREATE TABLE`. OpenAPI + Statement Execution curl. OpenSharing SQL. `system.access.audit`. Prompt (c) + (a). |
-| 0:47–0:50 | Architect | Close any prompt not yet spoken (usually (d) RTO/RPO numbers). Stop recording. |
+**(a) Legacy.** Existing ETL keeps writing extracts to this landing volume. Portal stays up. Cutover is per-consumer after gold reconciles. Rollback is Delta time travel.
 
-If a cell is slow, keep talking from the narration cards — do **not** cut to slides.
+**(b) Financial.** Gold tracks budgeted / obligated / expended. The model adds predicted velocity, risk class, and a trend ID. OVERRUN → reprogram. UNDER_EXEC → prevent lapse.
+
+**(c) Zero Trust / IL5.** This POC is a commercial workspace configured like the IL5 baseline: SSO, groups, Volumes not public buckets, no static export URL. Production is GovCloud DoD (`*.cloud.databricks.mil`).
+
+**(d) DR.** RPO = last Delta commit. RTO = restart the pipeline (checkpoints on the Volume). Annual exercise = deploy this bundle to a second workspace and run DEMO.
+
+**(e) Vendors.** Subscriptions are a gold table. `DATA_GAP` (the lapsed mock feed) shows on the App so a dark feed cannot silently degrade the forecast.

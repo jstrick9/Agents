@@ -1,137 +1,15 @@
 resources:
   jobs:
-    bootstrap_and_seed:
-      name: onr-itss-bootstrap-seed-${bundle.target}
-      description: Create UC objects (if needed) and land mock files. Run once per workspace.
-      max_retries: 1
-      timeout_seconds: 3600
-      email_notifications:
-        on_failure: []
-      tags:
-        project: onr-itss-poc
-        classification: mock-unclassified
-      tasks:
-        - task_key: bootstrap_uc
-          notebook_task:
-            notebook_path: ../src/setup/00_uc_bootstrap
-            base_parameters:
-              catalog: ${var.catalog}
-              schema: ${var.schema}
-              apply_group_grants: "false"
-              engineers_group: ${var.engineers_group}
-              analysts_group: ${var.analysts_group}
-              executives_group: ${var.executives_group}
-        - task_key: seed_landing
-          depends_on:
-            - task_key: bootstrap_uc
-          notebook_task:
-            notebook_path: ../src/setup/01_seed_mock_data
-            base_parameters:
-              catalog: ${var.catalog}
-              schema: ${var.schema}
-          environment_key: serverless
-      environments:
-        - environment_key: serverless
-          spec:
-            environment_version: "4"
-
-    file_arrival_ingest:
-      name: onr-itss-file-arrival-${bundle.target}
-      description: Element 3 — detect new landing files and refresh the medallion pipeline.
-      max_retries: 2
-      min_retry_interval_millis: 30000
-      timeout_seconds: 7200
-      tags:
-        project: onr-itss-poc
-        element: "3"
-        classification: mock-unclassified
-      trigger:
-        file_arrival:
-          url: /Volumes/${var.catalog}/${var.schema}/landing/grants
-          min_time_between_triggers_seconds: 60
-      tasks:
-        - task_key: refresh_medallion
-          pipeline_task:
-            pipeline_id: ${resources.pipelines.onr_medallion.id}
-            full_refresh: false
-
-    element_demo_sequence:
-      name: onr-itss-element-demo-${bundle.target}
-      description: Sequential Elements 3-7 notebooks for the 50-minute technical demonstration.
-      max_retries: 0
-      timeout_seconds: 5400
-      tags:
-        project: onr-itss-poc
-        classification: mock-unclassified
-      tasks:
-        - task_key: element_3_ingest
-          notebook_task:
-            notebook_path: ../src/notebooks/03_element_ingest_demo
-            base_parameters:
-              catalog: ${var.catalog}
-              schema: ${var.schema}
-          environment_key: serverless
-        - task_key: element_4_governance
-          depends_on:
-            - task_key: element_3_ingest
-          notebook_task:
-            notebook_path: ../src/notebooks/04_element_governance_catalog
-            base_parameters:
-              catalog: ${var.catalog}
-              schema: ${var.schema}
-          environment_key: serverless
-        - task_key: element_5_analytics
-          depends_on:
-            - task_key: element_4_governance
-          notebook_task:
-            notebook_path: ../src/notebooks/05_element_analytics_ml
-            base_parameters:
-              catalog: ${var.catalog}
-              schema: ${var.schema}
-          environment_key: serverless
-        - task_key: element_6_dashboard
-          depends_on:
-            - task_key: element_5_analytics
-          notebook_task:
-            notebook_path: ../src/notebooks/06_element_dashboard_automation
-            base_parameters:
-              catalog: ${var.catalog}
-              schema: ${var.schema}
-          environment_key: serverless
-        - task_key: element_7_export
-          depends_on:
-            - task_key: element_6_dashboard
-          notebook_task:
-            notebook_path: ../src/notebooks/07_element_secure_export
-            base_parameters:
-              catalog: ${var.catalog}
-              schema: ${var.schema}
-              export_format: parquet
-          environment_key: serverless
-      environments:
-        - environment_key: serverless
-          spec:
-            environment_version: "4"
-            dependencies:
-              - scikit-learn
-              - mlflow
-
-    nightly_validate:
-      name: onr-itss-nightly-validate-${bundle.target}
-      description: Post-pipeline QA assertions + quality monitor refresh.
+    bootstrap:
+      name: onr-itss-bootstrap-${bundle.target}
       max_retries: 1
       timeout_seconds: 1800
       tags:
         project: onr-itss-poc
-        classification: mock-unclassified
-      trigger:
-        periodic:
-          interval: 1
-          unit: DAYS
       tasks:
-        - task_key: validate_gold
+        - task_key: bootstrap
           notebook_task:
-            notebook_path: ../src/qa/validate_gold
+            notebook_path: ../src/setup/00_bootstrap
             base_parameters:
               catalog: ${var.catalog}
               schema: ${var.schema}
@@ -140,3 +18,15 @@ resources:
         - environment_key: serverless
           spec:
             environment_version: "4"
+
+    run_pipeline:
+      name: onr-itss-run-pipeline-${bundle.target}
+      max_retries: 1
+      timeout_seconds: 3600
+      tags:
+        project: onr-itss-poc
+      tasks:
+        - task_key: pipeline
+          pipeline_task:
+            pipeline_id: ${resources.pipelines.onr_medallion.id}
+            full_refresh: false
