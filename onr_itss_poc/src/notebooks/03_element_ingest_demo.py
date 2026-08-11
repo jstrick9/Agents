@@ -49,7 +49,7 @@ display(dbutils.fs.ls(f"{landing}/_demo"))
 # MAGIC - `cloudFiles.rescuedDataColumn = _rescued_data`
 # MAGIC - schema location on the `checkpoints` volume
 # MAGIC
-# MAGIC The DAB job `file_arrival_ingest` watches `/Volumes/{catalog}/{schema}/landing/grants` and starts a pipeline update when a new file arrives (60s debounce).
+# MAGIC The DAB job `file_arrival_ingest` watches `/Volumes/{catalog}/{schema}/landing/grants` and starts a pipeline update when a new file arrives (60s debounce). CI lives at `infra/ci/databricks-ci.yml` (copy into `.github/workflows/` in a repo that allows workflow files).
 
 # COMMAND ----------
 
