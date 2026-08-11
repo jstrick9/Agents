@@ -1,0 +1,30 @@
+resources:
+  schemas:
+    da_platform:
+      name: ${var.schema}
+      catalog_name: ${var.catalog}
+      comment: ONR ITSS POC Data and Analytics platform. MOCK_UNCLASSIFIED only.
+    qa:
+      name: qa
+      catalog_name: ${var.catalog}
+      comment: Quarantine and validation results for the ONR ITSS POC.
+
+  volumes:
+    landing:
+      name: landing
+      catalog_name: ${var.catalog}
+      schema_name: ${var.schema}
+      volume_type: MANAGED
+      comment: Auto Loader landing zone for mock grants, ERP, and vendor files.
+    export:
+      name: export
+      catalog_name: ${var.catalog}
+      schema_name: ${var.schema}
+      volume_type: MANAGED
+      comment: Secure Element 7 export target (CSV, JSON, Parquet).
+    checkpoints:
+      name: checkpoints
+      catalog_name: ${var.catalog}
+      schema_name: ${var.schema}
+      volume_type: MANAGED
+      comment: Auto Loader schema and checkpoint locations.
