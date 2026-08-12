@@ -1,25 +1,41 @@
 -- Databricks notebook source
 -- MAGIC %md
 -- MAGIC # ONR ITSS — Technical demonstration (Elements 3–7)
--- MAGIC **Key Personnel narrate. Live cloud. Mock data only. No slides. No clusters.**
+-- MAGIC **Key Personnel narrate. Live cloud. Mock data only. No slides. No clusters. No pipelines to create.**
 -- MAGIC
 -- MAGIC Attach this notebook to your **Serverless SQL warehouse** and run it top to bottom.
--- MAGIC Every cell is SQL — the pipeline does the compute-heavy work on serverless pipeline compute.
+-- MAGIC Every cell is SQL — streaming tables and materialized views do the incremental
+-- MAGIC work (serverless-managed Lakeflow under the hood, nothing for you to operate).
 -- MAGIC
 -- MAGIC Catalog: `onr_itss_poc.da_platform`
--- MAGIC Before this notebook: `00_bootstrap` run, seed files uploaded, pipeline **onr-itss-pipeline-dev** started once.
+-- MAGIC Before this notebook: `00_bootstrap` run and seed files uploaded to the landing Volume.
 -- MAGIC
 -- MAGIC Talk track (prompts a–e) is in `docs/DEMO_SCRIPT.md`.
+
+-- COMMAND ----------
+-- MAGIC %md
+-- MAGIC ## Build the medallion (≈90 seconds, then never again)
+-- MAGIC
+-- MAGIC The next cell runs `src/pipelines/medallion.sql` — the whole bronze → silver → gold
+-- MAGIC medallion as idempotent SQL. Every statement is `CREATE OR REFRESH`, so this is
+-- MAGIC safe to re-run at any time (it is also the DR runbook).
+-- MAGIC If `%run` cannot resolve the path in your Git-folder setup, open
+-- MAGIC `src/pipelines/medallion` and run it directly — same cells, same effect.
+
+-- COMMAND ----------
+
+-- MAGIC %run ../pipelines/medallion.sql
 
 -- COMMAND ----------
 -- MAGIC %md
 -- MAGIC ## Element 2 — Infrastructure as Code (30 seconds)
 -- MAGIC
 -- MAGIC The whole platform is declared in this Git folder: `databricks.yml`,
--- MAGIC `resources/pipelines.yml`, the pipeline source `src/pipelines/medallion.py`.
--- MAGIC The pipeline running in Workflows was created from that file — the Git folder is the
--- MAGIC source of truth, not click-ops. In a workspace with the CLI, `databricks bundle deploy`
--- MAGIC does the same thing.
+-- MAGIC `resources/pipelines.yml`, and the medallion source `src/pipelines/medallion.sql`
+-- MAGIC (SQL streaming tables + materialized views — the pipeline resource file is
+-- MAGIC intentionally empty). The Git folder is the source of truth, not click-ops:
+-- MAGIC re-running that notebook is the deploy. In a workspace with the CLI,
+-- MAGIC `databricks bundle deploy` syncs the same files.
 
 -- COMMAND ----------
 -- MAGIC %md
@@ -27,7 +43,8 @@
 -- MAGIC **Action:** ingest the mock S&T grant registry.
 -- MAGIC
 -- MAGIC Auto Loader watches the landing Volume for new files (no manual import step).
--- MAGIC Expectations drop bad rows. Extra columns land without an ALTER.
+-- MAGIC Silver's `DROP ROW` expectations drop bad rows. Extra columns land without an
+-- MAGIC `ALTER` — `addNewColumns` schema evolution, schema versions on the `checkpoints` Volume.
 
 -- COMMAND ----------
 
@@ -36,7 +53,8 @@ LIST '/Volumes/onr_itss_poc/da_platform/landing/grants';
 -- COMMAND ----------
 -- MAGIC %md
 -- MAGIC Bronze keeps every row; Silver drops the rows that fail quality expectations
--- MAGIC (bad grant ids, negative awards) — the **quality gate is in the pipeline**.
+-- MAGIC (bad grant ids, negative awards) — the **quality gate is SQL**, enforced on the
+-- MAGIC streaming table, with every violation tracked in the table's event log.
 
 -- COMMAND ----------
 
@@ -55,9 +73,26 @@ FROM onr_itss_poc.da_platform.silver_financial;
 
 -- COMMAND ----------
 -- MAGIC %md
+-- MAGIC The expectation violations that produced that bronze-vs-silver gap are queryable
+-- MAGIC from the streaming table's **event log** (same surface the pipeline used to expose):
+
+-- COMMAND ----------
+
+SELECT
+  row_expectations.dataset        AS dataset,
+  row_expectations.name           AS expectation,
+  row_expectations.passed_records AS passed_records,
+  row_expectations.failed_records AS failed_records
+FROM event_log('onr_itss_poc.da_platform.silver_grants')
+WHERE row_expectations IS NOT NULL
+ORDER BY timestamp DESC
+LIMIT 10;
+
+-- COMMAND ----------
+-- MAGIC %md
 -- MAGIC **Schema evolution** — `batch_002_schema_evolution.jsonl` arrived with two new columns
 -- MAGIC (`collaboration_flag`, `international_partner`). Auto Loader's `addNewColumns` mode
--- MAGIC absorbed them with zero pipeline reconfiguration:
+-- MAGIC absorbed them with zero reconfiguration:
 
 -- COMMAND ----------
 
@@ -72,10 +107,17 @@ LIMIT 10;
 -- MAGIC
 -- MAGIC 1. Open **Catalog Explorer** → `onr_itss_poc` → `da_platform` → `landing` → `grants`
 -- MAGIC 2. Drag **`data/mock/grants/live_drop_element3.jsonl`** (in this Git folder) into the folder
--- MAGIC 3. Go to **Workflows → Lakeflow pipelines → onr-itss-pipeline-dev → Start update**
--- MAGIC 4. When it reaches **Completed**, re-run the cell below
+-- MAGIC 3. Run the **`ALTER STREAMING TABLE ... REFRESH`** cell below — one SQL statement
+-- MAGIC    (if the refresh reports a schema change for the new `demo_marker` column, run it
+-- MAGIC    once more; the evolved schema then sticks)
+-- MAGIC 4. Re-run the verification cell after it
 -- MAGIC
--- MAGIC A brand-new grant arrives with no code change, no schema change, no restart.
+-- MAGIC A brand-new grant arrives with no code change, no pipeline update, no restart of
+-- MAGIC anything but that one refresh statement.
+
+-- COMMAND ----------
+
+ALTER STREAMING TABLE onr_itss_poc.da_platform.bronze_grants REFRESH;
 
 -- COMMAND ----------
 
@@ -86,18 +128,34 @@ WHERE grant_id = 'MOCK-ONR-N00014-26-C-0901' OR _source_file LIKE '%live_drop%';
 -- COMMAND ----------
 -- MAGIC %md
 -- MAGIC **Near-real-time path (narrate):** the same silver contract can read Kinesis
--- MAGIC (`spark.readStream.format("kinesis")`) in GovCloud; this demo uses Auto Loader
+-- MAGIC (`STREAM read_kafka` / structured streaming) in GovCloud; this demo uses Auto Loader
 -- MAGIC file-arrival so we don't need a live stream on camera.
 -- MAGIC
 -- MAGIC **Prompt (a):** legacy ETL keeps writing extracts to this landing Volume — additive,
--- MAGIC zero service gap. **Prompt (d):** checkpoints live on the Volume; restart the pipeline
--- MAGIC to resume — RPO is the last Delta commit, RTO is the restart.
+-- MAGIC zero service gap. **Prompt (d):** Auto Loader schema versions live on the
+-- MAGIC `checkpoints` Volume; re-running `medallion.sql` (`CREATE OR REFRESH`) rebuilds the
+-- MAGIC medallion — RPO is the last Delta commit, RTO is one notebook re-run.
+
+-- COMMAND ----------
+-- MAGIC %md
+-- MAGIC (Safety cell — the gold views normally refresh **automatically** as the streaming
+-- MAGIC tables update. Run this only if the counts in the cells above haven't moved.)
+
+-- COMMAND ----------
+
+REFRESH MATERIALIZED VIEW onr_itss_poc.da_platform.gold_financial_execution;
+REFRESH MATERIALIZED VIEW onr_itss_poc.da_platform.gold_predictive_velocity;
+REFRESH MATERIALIZED VIEW onr_itss_poc.da_platform.gold_anomalies;
+REFRESH MATERIALIZED VIEW onr_itss_poc.da_platform.gold_executive_kpis;
+REFRESH MATERIALIZED VIEW onr_itss_poc.da_platform.gold_executive_summary;
 
 -- COMMAND ----------
 -- MAGIC %md
 -- MAGIC ## Element 4 — Catalog, quality, lineage
 -- MAGIC Open **Catalog Explorer** on `onr_itss_poc.da_platform` in another tab and click
 -- MAGIC **Lineage** on `gold_financial_execution` — bronze → silver → gold end to end.
+-- MAGIC (Databricks shows the serverless-managed Lakeflow behind the views — there is no
+-- MAGIC pipeline we had to create.)
 
 -- COMMAND ----------
 
@@ -112,7 +170,7 @@ FROM onr_itss_poc.da_platform.gold_data_quality;
 
 SELECT vendor_name, dataset_name, status, gap_status, days_to_renewal
 FROM onr_itss_poc.da_platform.gold_vendors
-ORDER BY CASE gap_status WHEN 'DATA_GAP' THEN 1 WHEN 'RENEWAL_DUE' THEN 2 ELSE 3 END;
+ORDER BY CASE gap_status WHEN 'DATA_GAP' THEN 1 WHEN 'RENEWAL_DUE' THEN 2 WHEN 'LICENSE_PRESSURE' THEN 3 ELSE 4 END;
 
 -- COMMAND ----------
 -- MAGIC %md
@@ -138,13 +196,17 @@ LIMIT 20;
 -- MAGIC %md
 -- MAGIC ## Element 5 — Analytics / model (live)
 -- MAGIC
--- MAGIC The pipeline trains a **Spark ML risk model** on gold execution and registers it in
--- MAGIC **UC Models** (`onr_execution_risk`) — every full refresh re-trains and adds a version.
--- MAGIC Open **Models** in the sidebar to see the registered model, then run the queries below.
-
--- COMMAND ----------
-
-SHOW MODELS IN onr_itss_poc.da_platform;
+-- MAGIC The medallion runs a **SQL-native predictive model** — no external ML runtime, no
+-- MAGIC cluster, fully explainable and portable:
+-- MAGIC
+-- MAGIC - `gold_financial_execution` computes burn velocity, projection, and engineered risk
+-- MAGIC - `gold_predictive_velocity` re-derives risk from velocity vs the award's flat-line
+-- MAGIC   plan (`model_risk_class`) and emits a trend id (`ACCEL` / `DECEL` / `FLAT`)
+-- MAGIC - Catalog Explorer → `gold_predictive_velocity` → **Lineage** shows the model's inputs
+-- MAGIC
+-- MAGIC In production the same gold tables feed registered **UC Models** (MLflow) served via
+-- MAGIC serverless inference — swapping the SQL rules for a registered model changes one
+-- MAGIC materialized-view definition, not the platform.
 
 -- COMMAND ----------
 
@@ -171,7 +233,7 @@ ORDER BY awarded DESC;
 -- MAGIC 1. Open Lakeview **ONR Executive D and A** — KPI strip for the brief.
 -- MAGIC 2. Open the Streamlit **App** — search, filter, extract, then **Approve** an anomaly (no code).
 -- MAGIC
--- MAGIC Automated summary + routing come from the pipeline. Approve writes `gold_approval_log`.
+-- MAGIC Automated summary + routing come from the gold views. Approve writes `gold_approval_log`.
 
 -- COMMAND ----------
 
@@ -217,7 +279,7 @@ SHOW CREATE TABLE onr_itss_poc.da_platform.gold_financial_execution;
 -- MAGIC        "wait_timeout":"30s",
 -- MAGIC        "statement":"SELECT grant_id, risk_class, projected_total
 -- MAGIC                      FROM onr_itss_poc.da_platform.gold_financial_execution
--- MAGIC                      WHERE risk_class = '\''OVERRUN'\''"}'
+-- MAGIC                      WHERE risk_class = '\\''OVERRUN'\\''"}'
 -- MAGIC ```
 
 -- COMMAND ----------

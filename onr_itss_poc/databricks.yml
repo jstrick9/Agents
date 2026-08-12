@@ -3,10 +3,12 @@
 # Folder:    /Workspace/Users/joshua.strickland@satsyil.com/onr_itss_poc
 # Catalog:   onr_itss_poc.da_platform
 #
-# This Git folder is the source of truth. The pipeline is created from
-# resources/pipelines.yml — either manually in the UI (Workflows -> Lakeflow
-# pipelines, compute = Serverless) or with `databricks bundle deploy -t dev`
-# where the CLI is available. No cluster creation is required either way.
+# This Git folder is the source of truth. The medallion is Lakeflow-free: there is
+# NO pipeline to create — `src/pipelines/medallion.sql` (plain SQL, run on the
+# Serverless SQL warehouse) declares the streaming tables and materialized views,
+# and `resources/pipelines.yml` is intentionally empty (it stays only as the
+# extension point). `databricks bundle deploy -t dev` simply syncs the folder where
+# the CLI is available; no cluster creation is required either way.
 
 bundle:
   name: onr_itss_poc
