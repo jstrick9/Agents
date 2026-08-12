@@ -56,7 +56,7 @@ try:
     if not summary.empty:
         st.info(summary.iloc[0]["summary_text"])
 except Exception as exc:
-    st.warning(f"Run the pipeline first: {exc}")
+    st.warning(f"Run the medallion first: {exc}")
 
 try:
     kpis = query(f"SELECT * FROM {fqn('gold_executive_kpis')} LIMIT 1")
@@ -107,7 +107,7 @@ with tab_p:
     st.caption(f"{len(port)} awards")
 
 with tab_a:
-    st.caption("Automated flags routed to an owner. Approve writes an audited row — pipeline MV is not updated in place.")
+    st.caption("Automated flags routed to an owner. Approve writes an audited row — the gold view is not updated in place.")
     try:
         execute(
             f"""CREATE TABLE IF NOT EXISTS {fqn('gold_approval_log')} (

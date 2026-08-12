@@ -1,7 +1,8 @@
-# Install (short) — Serverless-only path
+# Install (short) — Serverless-only path, Lakeflow-free medallion
 
-**No clusters anywhere.** Everything runs on your **Serverless SQL warehouse**, a
-**serverless Lakeflow pipeline**, and the **App** (serverless app runtime).
+**No clusters anywhere. No pipeline to create.** Everything runs on your
+**Serverless SQL warehouse** (streaming tables + materialized views built from
+plain SQL) and the **App** (serverless app runtime).
 
 **Host:** https://dbc-ae83c2ba-d87c.cloud.databricks.com/?o=7474653232339519
 **Folder:** `/Workspace/Users/joshua.strickland@satsyil.com/onr_itss_poc`
@@ -9,7 +10,7 @@
 
 ## 1. Get the code into the workspace
 
-Add the Git folder `https://github.com/jstrick9/Agents` (branch `arena/019ff225-agents`)
+Add the Git folder `https://github.com/jstrick9/Agents` (branch `main`)
 into your workspace at the folder path above, then open the inner **`onr_itss_poc`** package.
 
 ## 2. Bootstrap (SQL notebook — runs on your Serverless SQL warehouse)
@@ -39,34 +40,34 @@ picker, and **Run all**. It creates (SQL only, admin):
 All files are JSONL/CSV so Auto Loader reads them as-is. Re-run the `LIST` cells in
 `00_bootstrap` to confirm.
 
-## 4. Create the pipeline manually (Serverless compute)
+## 4. Build the medallion (SQL — no pipeline to create)
 
-Workflows → **Lakeflow pipelines** → **Create pipeline**:
+Open `src/pipelines/medallion`, attach your **Serverless SQL warehouse**, and
+**Run all** — or just run `DEMO`, whose first cells do it for you via `%run`.
+Every statement is `CREATE OR REFRESH`, so it is idempotent: re-running is the
+deploy, the refresh, and the DR runbook.
 
-| Setting | Value |
-|---|---|
-| Name | `onr-itss-pipeline-dev` |
-| Product edition | Advanced |
-| Compute | **Serverless** (checked — no cluster) |
-| Library → Add notebook | browse the Git folder → `src/pipelines/medallion.py` |
-| Target catalog | `onr_itss_poc` |
-| Target schema | `da_platform` |
-| Configuration | `onr.catalog` = `onr_itss_poc`, `onr.schema` = `da_platform` |
+Confirmations:
 
-Create, then **Start** and wait for **Completed**. Confirmations:
+- `bronze_*` / `silver_*` streaming tables and `gold_financial_execution`,
+  `gold_predictive_velocity`, `gold_anomalies`, … materialized views exist in
+  Catalog Explorer
+- `event_log('onr_itss_poc.da_platform.silver_grants')` shows the quality
+  expectations dropping bad grant ids / negative awards
+- Catalog Explorer shows the **serverless-managed** Lakeflow pipeline behind the
+  views — that is Databricks' plumbing; there is nothing for you to create, start,
+  or update
 
-- `gold_financial_execution`, `gold_predictive_velocity`, `gold_anomalies`, … exist in Catalog Explorer
-- Expectations tab shows dropped bad grant ids / negative awards
-- **Models** → `onr_itss_poc.da_platform.onr_execution_risk` is registered (Element 5)
-
-> If **Serverless** is greyed out for pipelines, ask the workspace admin to enable
-> serverless compute for Lakeflow pipelines — no cluster creation is needed either way.
+> SQL warehouse note: use your **Serverless** warehouse (or a **Pro** warehouse if
+> serverless is disabled in your workspace). Streaming tables and materialized
+> views are not available on Classic SQL warehouses.
 
 ## 5. Demo (SQL notebook — runs on your Serverless SQL warehouse)
 
 Open `src/notebooks/DEMO`, attach your **Serverless SQL warehouse**, and run it top to
-bottom. It is one sequential script — Elements 3–7 plus the prompts. (The Element 3 live
-drop step is a Catalog Explorer drag-and-drop, then a pipeline update.)
+bottom. It is one sequential script — Elements 3–7 plus the prompts. (The Element 3
+live drop is a Catalog Explorer drag-and-drop, then one
+`ALTER STREAMING TABLE ... REFRESH` cell.)
 
 ## 6. App (once, UI)
 
@@ -94,6 +95,8 @@ the one-page narration card.
 
 ### Optional: `databricks bundle deploy`
 
-Where the CLI is available, `resources/pipelines.yml` + `databricks.yml` deploy the same
-pipeline definition (`databricks bundle deploy -t dev`). This repo treats the Git folder
-as the source of truth; the manual UI path above just points the pipeline at that same file.
+Where the CLI is available, `databricks.yml` + `resources/pipelines.yml` sync and
+validate the Git folder (`databricks bundle deploy -t dev`). `resources/pipelines.yml`
+is **intentionally empty** — the medallion is Lakeflow-free, so the bundle declares no
+pipeline. This repo treats the Git folder as the source of truth; the manual UI path
+above just points the notebooks at those same files.

@@ -7,7 +7,8 @@
 -- MAGIC
 -- MAGIC 1. In the compute picker, attach this notebook to your **Serverless SQL warehouse**.
 -- MAGIC 2. **Run all** (you need `CREATE CATALOG` — you have admin).
--- MAGIC 3. Then do the one-time prep in the last cells: upload seed files + start the pipeline.
+-- MAGIC 3. Then do the one-time prep in the last cells: upload seed files + build the
+-- MAGIC    medallion (`src/pipelines/medallion.sql` — no pipeline to create).
 
 -- COMMAND ----------
 
@@ -21,7 +22,7 @@ CREATE SCHEMA IF NOT EXISTS onr_itss_poc.da_platform COMMENT 'bronze / silver / 
 
 CREATE VOLUME IF NOT EXISTS onr_itss_poc.da_platform.landing COMMENT 'Auto Loader landing (Element 3)';
 CREATE VOLUME IF NOT EXISTS onr_itss_poc.da_platform.export COMMENT 'Element 7 export';
-CREATE VOLUME IF NOT EXISTS onr_itss_poc.da_platform.checkpoints COMMENT 'Auto Loader checkpoints';
+CREATE VOLUME IF NOT EXISTS onr_itss_poc.da_platform.checkpoints COMMENT 'Auto Loader schema versions (DR, prompt d)';
 
 -- COMMAND ----------
 -- MAGIC %md
@@ -66,8 +67,10 @@ COMMENT 'App writes Approve/Reject here. Element 6.';
 -- MAGIC > Keep `data/mock/grants/live_drop_element3.jsonl` **out** — that is the Element 3
 -- MAGIC > live file drop, uploaded on camera during the demo.
 -- MAGIC
--- MAGIC **2. Create + start the pipeline** — see `INSTALL.md` step 4 (create manually in
--- MAGIC Workflows → Lakeflow pipelines, compute = **Serverless**).
+-- MAGIC **2. Build the medallion** — open `src/pipelines/medallion` (or run `DEMO`, whose
+-- MAGIC first cells `%run` it) on the same **Serverless SQL warehouse**. There is **no
+-- MAGIC pipeline to create or start** — the notebook's `CREATE OR REFRESH` statements build
+-- MAGIC the bronze/silver streaming tables and gold materialized views.
 -- MAGIC
 -- MAGIC When both are done, re-run the three `LIST` cells below to confirm the files are visible.
 
