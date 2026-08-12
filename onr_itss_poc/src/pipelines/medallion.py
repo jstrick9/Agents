@@ -1,6 +1,14 @@
-"""ONR ITSS POC — one Lakeflow pipeline (bronze → silver → gold)."""
+"""ONR ITSS POC — one Lakeflow pipeline (bronze → silver → gold).
 
+Runs on Serverless pipeline compute — no cluster creation required.
+Element 5 trains a Spark ML model (no external libraries) and registers it in UC Models.
+"""
+
+import mlflow
 from pyspark import pipelines as dp
+from pyspark.ml import Pipeline as SparkPipeline
+from pyspark.ml.classification import LogisticRegression
+from pyspark.ml.feature import StringIndexer, VectorAssembler
 from pyspark.sql import functions as F
 
 
@@ -133,6 +141,47 @@ def gold_financial_execution():
             "projected_total", "risk_class", "trend_id", "predicted_velocity", "as_of_ts",
         )
     )
+
+
+@dp.materialized_view(name="gold_predictive_velocity", comment="Spark ML risk model, trained + registered by the pipeline. Element 5.")
+def gold_predictive_velocity():
+    fin = spark.read.table(f"{CATALOG}.{SCHEMA}.gold_financial_execution")  # noqa: F821
+    train = fin.filter(F.col("risk_class") != "UNKNOWN")
+    assert train.count() > 0, (
+        "gold_financial_execution is empty — upload the seed files and run a pipeline update first"
+    )
+
+    features = ["award_amount", "expended", "obligated", "monthly_burn", "remaining_months"]
+    indexer = StringIndexer(inputCol="risk_class", outputCol="risk_class_idx", stringOrderType="frequencyDesc")
+    assembler = VectorAssembler(inputCols=features, outputCol="features")
+    lr = LogisticRegression(featuresCol="features", labelCol="risk_class_idx", maxIter=50)
+    model = SparkPipeline(stages=[indexer, assembler, lr]).fit(train)
+
+    labels = model.stages[0].labels  # index -> label
+    label_map = F.create_map(*[item for i, lbl in enumerate(labels) for item in (F.lit(i), F.lit(lbl))])
+    pred = (
+        model.transform(fin)
+        .withColumn("model_risk_class", label_map[F.col("prediction").cast("int")])
+        .select(
+            "grant_id", "project_name", "onr_code", "award_amount", "risk_class",
+            "model_risk_class", "predicted_velocity", "trend_id",
+            F.current_timestamp().alias("as_of_ts"),
+        )
+    )
+
+    # Register in UC Models — every full refresh re-trains and adds a version.
+    mlflow.set_registry_uri("databricks-uc")
+    if mlflow.active_run() is None:
+        mlflow.start_run(run_name="onr-risk")
+    else:
+        mlflow.start_run(run_name="onr-risk", nested=True)
+    try:
+        mlflow.spark.log_model(
+            model, "model", registered_model_name=f"{CATALOG}.{SCHEMA}.onr_execution_risk"
+        )
+    finally:
+        mlflow.end_run()
+    return pred
 
 
 @dp.materialized_view(name="gold_anomalies", comment="Flags + routing. Element 6.")

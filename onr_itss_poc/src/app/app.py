@@ -164,6 +164,7 @@ with tab_v:
         st.error("A lapsed subscription is creating a dashboard data gap.")
 
 with tab_e:
+    st.caption("Element 7 — filtered gold, exported in open formats, plus the same contract Advana / Cloud One calls over SQL Statement Execution.")
     ext = query(
         f"""SELECT grant_id, project_name, onr_code, award_amount, expended, projected_total, risk_class, trend_id
             FROM {fqn('gold_financial_execution')} WHERE {wh}"""
@@ -177,3 +178,12 @@ with tab_e:
         st.download_button("Parquet", buf.getvalue(), f"onr_extract_{stamp}.parquet", "application/octet-stream")
     except Exception:
         pass
+    host = os.environ.get("DATABRICKS_HOST", "dbc-ae83c2ba-d87c.cloud.databricks.com")
+    st.code(
+        f"""curl -sS -X POST "https://{host}/api/2.0/sql/statements" \\
+  -H "Authorization: Bearer $DATABRICKS_TOKEN" \\
+  -H "Content-Type: application/json" \\
+  -d '{{"warehouse_id":"{WAREHOUSE_ID}","catalog":"{CATALOG}","schema":"{SCHEMA}","wait_timeout":"30s","statement":"SELECT grant_id, risk_class, projected_total FROM {CATALOG}.{SCHEMA}.gold_financial_execution WHERE risk_class = \\'OVERRUN\\'"}}'""",
+        language="bash",
+    )
+    st.caption("Bearer token = continuous authorization. No public URL, no static export file.")

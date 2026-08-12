@@ -3,7 +3,6 @@ resources:
     onr_medallion:
       name: onr-itss-pipeline-${bundle.target}
       serverless: true
-      photon: true
       catalog: ${var.catalog}
       target: ${var.schema}
       continuous: false
@@ -11,5 +10,5 @@ resources:
         onr.catalog: ${var.catalog}
         onr.schema: ${var.schema}
       libraries:
-        - file:
-            path: ../src/pipelines/medallion.py
+        - notebook:
+            path: src/pipelines/medallion.py

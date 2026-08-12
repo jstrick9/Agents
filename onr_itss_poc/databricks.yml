@@ -1,7 +1,12 @@
-# ONR ITSS POC — Databricks Asset Bundle
+# ONR ITSS POC — Databricks Asset Bundle (IaC declaration, Element 2)
 # Workspace: https://dbc-ae83c2ba-d87c.cloud.databricks.com/?o=7474653232339519
 # Folder:    /Workspace/Users/joshua.strickland@satsyil.com/onr_itss_poc
 # Catalog:   onr_itss_poc.da_platform
+#
+# This Git folder is the source of truth. The pipeline is created from
+# resources/pipelines.yml — either manually in the UI (Workflows -> Lakeflow
+# pipelines, compute = Serverless) or with `databricks bundle deploy -t dev`
+# where the CLI is available. No cluster creation is required either way.
 
 bundle:
   name: onr_itss_poc
@@ -22,9 +27,6 @@ variables:
     default: onr_itss_poc
   schema:
     default: da_platform
-  warehouse_id:
-    description: SQL warehouse id (required for the App and Lakeview)
-    default: ""
 
 targets:
   dev:

@@ -405,17 +405,20 @@ def write_all(root: Path) -> dict[str, Path]:
     paths = {
         "grants": root / "grants" / "batch_001.jsonl",
         "grants_evolved": root / "grants" / "batch_002_schema_evolution.jsonl",
-        "grants_drop": root / "grants" / "live_drop_element3.json",
+        "grants_drop": root / "grants" / "live_drop_element3.jsonl",
         "financial": root / "financial" / "fy26_execution.csv",
         "financial_variant": root / "financial" / "fy26_execution_variant.csv",
-        "vendors": root / "vendors" / "subscriptions.json",
+        "vendors": root / "vendors" / "subscriptions.jsonl",
     }
+    # NOTE: every seed file is JSONL or CSV. Auto Loader's `json` format expects
+    # one JSON object per line (no pretty-printed arrays), so files can be
+    # dropped into the landing Volume from the repo without any transformation.
     write_jsonl(paths["grants"], grants)
     write_jsonl(paths["grants_evolved"], evolved)
-    write_json(paths["grants_drop"], drop)
+    write_jsonl(paths["grants_drop"], [drop])
     write_csv(paths["financial"], financial)
     write_csv(paths["financial_variant"], financial_variant)
-    write_json(paths["vendors"], vendors)
+    write_jsonl(paths["vendors"], vendors)
     return paths
 
 
