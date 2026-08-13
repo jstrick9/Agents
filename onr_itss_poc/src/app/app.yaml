@@ -1,8 +1,0 @@
-command: ["streamlit", "run", "app.py", "--server.port", "8000", "--server.enableCORS", "false"]
-env:
-  - name: DATABRICKS_WAREHOUSE_ID
-    valueFrom: sql-warehouse
-  - name: ONR_CATALOG
-    value: onr_itss_poc
-  - name: ONR_SCHEMA
-    value: da_platform
